@@ -38,6 +38,11 @@ class Board():
         board_str = board_str[:-1]  #remove trailing '\n'
         return board_str
 
+    def reset_board(self, value = None):
+        for i in range(self.get_width()):
+            for j in range(self.get_height()):
+                self.set_element([i,j], value)
+
     def get_board(self):
         return self.board
 
@@ -48,6 +53,9 @@ class Board():
         Output: Element Value (assumed to be a char)
         """
         return self.board[pos[0]][pos[1]]
+
+    def set_element(self,pos,value):
+        self.board[pos[0]][pos[1]] = value
 
 
     def find_element(self, search_value):
@@ -120,14 +128,16 @@ class Board():
         Inputs:
             board: python list of lists, where element = board[row][col].
             pieces: Optional
-                Dictionary, with display char as key, and elementDisplay pieces on the board, over the underlying space.
+                Dictionary, with display char as key, and elementDisplay pieces
+                on the board, over the underlying space.
         """
-        assert(self.board is not None)
+        #Clean copy, so python doesn't pass the reference
+        board_copy = [row[:] for row in self.board] 
         if pieces is not None:
             for piece in pieces:
-                self.board[pieces[piece][0]][pieces[piece][1]] = piece
+                board_copy[pieces[piece][0]][pieces[piece][1]] = piece
 
-        print self._board_as_str()
+        print '\n' + self._board_as_str(board_copy)
 
 class BoardTester(unittest.TestCase):
 
@@ -165,6 +175,9 @@ class BoardTester(unittest.TestCase):
         pass
 
     def test_get_board(self):
+        """
+        Grabs the actual grid, list of lists, in the board object.
+        """
         self.assertEqual(self.B.board, self.B.get_board())
 
     def test_get_width(self):
@@ -249,7 +262,7 @@ class BoardTester(unittest.TestCase):
 
 
         #Print automatically appends '\n', which is perfect for our usage
-        self.assertEqual(print_buffer.getvalue(), self.str_board_ground_truth + '\n' )
+        self.assertEqual(print_buffer.getvalue(), '\n' + self.str_board_ground_truth + '\n' )
 
     def test_display_board__input_pieces(self):
         """
@@ -277,7 +290,7 @@ class BoardTester(unittest.TestCase):
         # print "Truth:"
         # print str_board + '\n'
         #Print automatically appends '\n', which is perfect for our usage
-        self.assertEqual(print_buffer.getvalue(), str_board + '\n' )
+        self.assertEqual(print_buffer.getvalue(), '\n'+ str_board + '\n' )
 
     def test_find_element__pass_single_element(self):
         self.B.board = self.board_ground_truth
@@ -288,6 +301,28 @@ class BoardTester(unittest.TestCase):
         self.B.board = self.board_ground_truth
         pos = self.B.find_element(5)
         self.assertEqual(pos, [])
+
+    def test_reset_board(self):
+        self.B.board = self.board_ground_truth
+        self.B.reset_board()
+        self.assertEqual(self.B.get_board(),[[None]*8]*8)
+
+    def test_set_element(self):
+        pos = [2,7]
+        value = 5
+
+        self.board_ground_truth =  [['.','.','.','.','.','.','.','.'],
+                                   ['.','.','.','.','.','.','.','.'],
+                                   ['.','S','.','.','.','.','.',5],
+                                   ['.','.','.','.','.','.','.','.'],
+                                   ['.','.','.','.','.','E','.','.'],
+                                   ['.','.','.','.','.','.','.','.'],
+                                   ['.','.','.','.','.','.','.','.'],
+                                   ['.','.','.','.','.','.','.','.']]
+
+        self.B.board = self.board_ground_truth
+        self.B.set_element(pos, value)
+        self.assertEqual(self.board_ground_truth, self.B.board)
 
     @unittest.skip("Just Experimenting.")
     def test_print_intercept(self):
