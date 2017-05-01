@@ -53,17 +53,38 @@ class Knight():
         if self.knight_pos is None:
             raise Exception("Input Error: No knight start position provided.")
 
-    def review_path(self):
-        raise NotImplementedError
+    def reconstruct_path(self):
+        optimal_path = []
+        current_node = self.target_pos
+        while True:
+            optimal_path.append(current_node)
+            current_node = self.journey_map.get_element(current_node)
+            if current_node == None:
+                break
+
+        return list(reversed(optimal_path))
 
     def plan_path(self):
         """
+        Plans a path for the knight to take. Optimizes according to cost function
+        defined by self.get_cost(). 
+
+        Inputs:
+            None
+
+        Outputs:
+            None
+
+        Side-Effects:
+            self.cost_map: a board whose values represent the lowest discovered cost
+                of achieving that position.
+            self.journey_map: A map of reference coordinates to the last point. This
+                can be used to recunstruct the optimal path.
         """
         active_list  = [self.knight_pos] #Init list with a start pos
 
         #Initialize map of journey costs 
         start_pos = self.knight_pos
-        self = Knight(self.board_path, start_pos)
 
         self.journey_map = board.Board(self.board_path)
         self.cost_map = board.Board(self.board_path)
@@ -76,8 +97,8 @@ class Knight():
             # Rational moves are allowed for a knight, land on the board, and land
             # upon unexplored spaces
             exploratory_node = active_list.pop(0)
-            print "Update:"
-            self.display_knight(exploratory_node)
+            # print "Update:"
+            # self.display_knight(exploratory_node)
             new_nodes = self.explore_moves(exploratory_node)
             
             #conservative finish condition
@@ -89,11 +110,11 @@ class Knight():
             if self.target_pos in new_nodes:
                 # report()
 
-                print "Journey:"
-                self.journey_map.display_board()
-                print "Cost Map:"
-                self.cost_map.display_board()
-                print "Minimum Cost:\t%i" % self.cost_map.get_element(self.target_pos)
+                # print "Journey:"
+                # self.journey_map.display_board()
+                # print "Cost Map:"
+                # self.cost_map.display_board()
+                # print "Minimum Cost:\t%i" % self.cost_map.get_element(self.target_pos)
                 return
             for new_node in new_nodes:
                 active_list.append(new_node)
@@ -121,17 +142,34 @@ class Knight():
         #find all desirable nodes to move to
         new_nodes = []
         for node in self.get_possible_nodes(curr_node):
-            move_cost = self.get_cost(self.board.get_element(node))
+            try:
+                move_cost = self.get_cost(self.board.get_element(node))
+            except:
+                print node
+                print len(self.board.get_board())
+                print len(self.board.get_board()[0])
+                raise
             path_cost = self.cost_map.get_element(curr_node)
             extended_path_cost = path_cost + move_cost
             last_node_cost = self.cost_map.get_element(node)
             if ( self.cost_map.get_element(node) == None or
                  extended_path_cost < self.cost_map.get_element(node) ):
-                    print '*'*30 
-                    print node
-                    print "path_cost:%i\tmove_cost:%i\textended_cost:%i\t" % (path_cost, move_cost,extended_path_cost)
+                    # print '*'*30 
+                    # print node
+                    # print "path_cost:%i\tmove_cost:%i\textended_cost:%i\t" % (path_cost, move_cost,extended_path_cost)
+                    # self.board.display_board()
+                    # self.cost_map.display_board()
+                    # self.journey_map.display_board()
+                    # try:
                     self.cost_map.set_element(node,extended_path_cost)
-                    self.journey_map.get_board()[node[0]][node[1]] = curr_node
+                    # except:
+                    #     print "*"*100
+                    #     print node
+                    #     print len(self.cost_map.get_board())
+                    #     print len(self.cost_map.get_board()[0])
+                    #     print extended_path_cost
+                    #     raise
+                    self.journey_map.set_element(node, curr_node)
                     new_nodes.append(node)
 
         return new_nodes
@@ -146,8 +184,8 @@ class Knight():
         raise NotImplementedError
 
     def located_within_board(self, pos):
-        y_on_board = (pos[0] >= 0) and (pos[0] <= self.board.get_height())
-        x_on_board = (pos[1] >= 0) and (pos[1] <= self.board.get_width())
+        y_on_board = (pos[0] >= 0) and (pos[0] < self.board.get_height())
+        x_on_board = (pos[1] >= 0) and (pos[1] < self.board.get_width())
         if (x_on_board and y_on_board):
             return True
         else:
@@ -182,9 +220,10 @@ class Knight():
         """
         Return cost for a move to a specific destination.
         """
-        value_lookup =  {'.':1,
+        value_lookup =  {'B':100000,
+                         '.':1,
                          'W':2,
-                         'R':None, #infinite, if you want
+                         'R':100000, #infinite, if you want
                          'T':1,
                          'L':5,
                          'S':0, #mute point, since costs acrue upon landing
@@ -212,18 +251,18 @@ class Knight():
         if tele[1] == curr_pos:
             return tele[0]
 
-    def create_cost_board(self, board):
-        """
-        May have jumped the gun here...doesn't seem to be needed.
-        """
-        self.cost_board = self.board
-        cost_board = self.cost_board.get_board()
-        for row in enumerate(self.cost_board.get_board()):
-            for element in enumerate(row[1]):
-                value = element[1]
-                cost_board[row[0]][element[0]] = self.get_cost(value)
+    # def create_cost_board(self, board):
+    #     """
+    #     May have jumped the gun here...doesn't seem to be needed.
+    #     """
+    #     self.cost_board = self.board
+    #     cost_board = self.cost_board.get_board()
+    #     for row in enumerate(self.cost_board.get_board()):
+    #         for element in enumerate(row[1]):
+    #             value = element[1]
+    #             cost_board[row[0]][element[0]] = self.get_cost(value)
 
-        # self.cost_board.display_board()
+    #     # self.cost_board.display_board()
 
     def display_knight(self, pos = None):
         """
@@ -451,10 +490,10 @@ class KnightTester(unittest.TestCase):
                         "knight is not permitted to make.")
         self.assertRegexpMatches(self.k.error_context, error_phrase)
 
+    @unittest.skip("Never used this - didn't make sense to create methods "
+        "for a specific instance.")
     def test_create_cost_board__pass(self):
         self.k.create_cost_board(self.k.board)
-        print "!@#$%^"*10
-        self.k.cost_board.display_board()
         self.assertEqual(self.k.cost_board.get_board()[0][0], 1)
         self.assertEqual(self.k.cost_board.get_board()[2][1], 0)
         
@@ -575,6 +614,30 @@ class KnightTester(unittest.TestCase):
     def test_plan_path(self):
         self.k.plan_path()
 
+    def test_reconstruct_path_8x8(self):
+        self.k.plan_path()
+        path = self.k.reconstruct_path()
+        print path
+        for step in path:
+            my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
+            print my_str + "Node: " + str(step)
+
+    def test_reconstruct_path_32x32(self):
+        self.k = Knight('32x32_board.txt', start_pos = [0,0], target_pos = [31,31] )
+        self.k.plan_path()
+        path = self.k.reconstruct_path()
+        for step in path:
+            my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
+            print my_str + "Node: " + str(step)
+
+        journey = {}
+        for step in enumerate(path):
+            step_num = step[0]
+            step_node = step[1]
+            journey[step_num] = step_node
+
+        self.k.cost_map.display_board(pieces = journey)
+        self.k.board.display_board(pieces = journey)
 
 if __name__ == '__main__':
     k = Knight('8x8_board.txt')
