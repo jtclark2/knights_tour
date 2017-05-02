@@ -1,6 +1,25 @@
 """
-Level 1: Call instantiate Knight(), and call self.validate_node_sequence
-Level 2-4:
+Assumptions:
+    a) Board is rectangular. I anticipate other cases would work with minor
+       tweaks, notably Board.read_board() and Knight.validate_within_bounds()
+    b) The 32x32 board starts are passed in, since 'S' and 'E' were not
+       pre-populated. 
+
+Level 1: Call Knight().validate_node_sequence(node_sequence, rich_print)
+    Note that while this method fulfills the objective, a generator proved
+    more useful than a validator throughout the problem.
+Level 2: Call Knight().plan_path()
+    Note that Knight().reconstruct_path() is useful for viewing the results.
+Level 3: Same as 2. Now we just excplicitly assume all inputs must be 1.
+    If your data_set wasn't already curated, then we'd convert each node
+    value to '.' As it stands, problem 3 applies to a board that has only
+    '.', 'S', & 'E', and the cost function I've used holds true.
+Level 4: Again, same as 2,3. It's just a matter of swapping the cost function.
+    In the Rock case, I chose to implement a absurdly high cost, rather than 
+    adding an explicit filter.
+    In the special cases of teleportation, and barriers, I chose to modify
+    the legal moves that were generated. It just made more logical sense
+    updating the node_generation method.
 
 Major Assumption: This space is fully searchable, since the board is 32x32,
 meaning that 1024 positions exist, each with 8 possible moves. This is well
@@ -19,8 +38,6 @@ import board
 
 
 class Knight():
-
-
 
     def __init__(self, board_path, start_pos = None, target_pos = None):
         """
@@ -106,8 +123,11 @@ class Knight():
             #     # report()
             #     return
 
+            for new_node in new_nodes:
+                active_list.append(new_node)
             # Quick Finish condition (holds true in simple case)
-            if self.target_pos in new_nodes:
+            if active_list == []:
+            # if self.target_pos in new_nodes:
                 # report()
 
                 # print "Journey:"
@@ -116,8 +136,6 @@ class Knight():
                 # self.cost_map.display_board()
                 # print "Minimum Cost:\t%i" % self.cost_map.get_element(self.target_pos)
                 return
-            for new_node in new_nodes:
-                active_list.append(new_node)
 
     def explore_moves(self, curr_node, move_heuristic = None):
         """
@@ -154,21 +172,9 @@ class Knight():
             last_node_cost = self.cost_map.get_element(node)
             if ( self.cost_map.get_element(node) == None or
                  extended_path_cost < self.cost_map.get_element(node) ):
-                    # print '*'*30 
-                    # print node
-                    # print "path_cost:%i\tmove_cost:%i\textended_cost:%i\t" % (path_cost, move_cost,extended_path_cost)
-                    # self.board.display_board()
-                    # self.cost_map.display_board()
-                    # self.journey_map.display_board()
-                    # try:
+
                     self.cost_map.set_element(node,extended_path_cost)
-                    # except:
-                    #     print "*"*100
-                    #     print node
-                    #     print len(self.cost_map.get_board())
-                    #     print len(self.cost_map.get_board()[0])
-                    #     print extended_path_cost
-                    #     raise
+
                     self.journey_map.set_element(node, curr_node)
                     new_nodes.append(node)
 
@@ -177,20 +183,96 @@ class Knight():
         # else:
         #     if self.journey_map[node[0]][node[1]] >
 
-    def move_heuristic():
+    def move_heuristic(self):
         """
         Provide heurist of distance remaining.
         """
         raise NotImplementedError
 
-    def located_within_board(self, pos):
-        y_on_board = (pos[0] >= 0) and (pos[0] < self.board.get_height())
-        x_on_board = (pos[1] >= 0) and (pos[1] < self.board.get_width())
+    def validate_L_move(self,dx,dy):
+        if (abs(dx) == 2 and abs(dy) == 1) or (abs(dx) == 1 and abs(dy) == 2):
+            return True
+        else:
+            return False
+
+    def validate_within_bounds(self, node):
+        """
+        Check if a particular falls within bound.
+        Input: node = [y,x]
+        Output: True if in bounds, False if outside
+        """
+        y_on_board = (node[0] >= 0) and (node[0] < self.board.get_height())
+        x_on_board = (node[1] >= 0) and (node[1] < self.board.get_width())
         if (x_on_board and y_on_board):
             return True
         else:
             self.error_context = "Moves are not contained on the board"
             return False
+
+    def validate_barrier_clear(self, curr_node, next_node, aggressive = False):
+        """
+        Check if a particular falls within bound.
+        Input: node = [y,x]
+        Output: 
+            True if path is clear of barriers
+            False if barriers invalidate move
+        Assumptions: Input moves are properly formatted.
+        """
+        (dy,dx) = (next_node[0] - curr_node[0]) , (next_node[1] - curr_node[1])
+        # print "start"
+        if (self.validate_L_move(dx,dy) == False):
+            return #the move is not valid (probably a teleport)
+
+        # print "L-checked"
+        y_sign = dy/abs(dy)
+        x_sign = dx/abs(dx)
+        # print y_sign
+        # print x_sign
+
+        #X first 
+        # S 1 2
+        # . . 3
+        x_travel = 0
+        y_travel = 0
+        x_first_path =[]
+        for x_travel in range(1,abs(dx)+1):    
+            x_first_path.append([curr_node[0],curr_node[1] + x_travel*x_sign])
+        for y_travel in range(1,abs(dy)+1):
+            x_first_path.append([curr_node[0]+y_travel*y_sign,curr_node[1] + x_travel*x_sign])
+
+        x_clear = True
+        for node in x_first_path:
+            # print node
+            # print self.board.get_element(node)
+            if self.board.get_element(node) == 'B':
+                x_clear = False
+        #         print "XPATH FAIL!!!"
+        # print '\n'
+        #Y first
+        # S . .
+        # 1 2 3
+        x_travel = 0
+        y_travel = 0
+        y_first_path =[]
+        for y_travel in range(1,abs(dy)+1):
+            y_first_path.append([curr_node[0]+y_travel*y_sign,curr_node[1] + x_travel*x_sign])
+        for x_travel in range(1,abs(dx)+1):    
+            y_first_path.append([curr_node[0]+y_travel*y_sign,curr_node[1] + x_travel*x_sign])
+
+        y_clear = True
+        for node in y_first_path:
+            # print node
+            # print repr(self.board.get_element(node))
+            if self.board.get_element(node) == 'B':
+                y_clear = False
+                # print "YPATH FAIL!!!"
+
+        if aggressive == True:
+            #Absolutely no obstructions! Both must be clear 
+            return x_clear and y_clear
+        else:
+            #or either path is open, we're clear
+            return x_clear or y_clear
 
     def get_possible_nodes(self, curr_node):
         delta_moves = [[-2,-1],
@@ -207,8 +289,10 @@ class Knight():
         for move in delta_moves:
             for i in range(len(curr_node)): #loop over [y,x]
                 new_node[i] = curr_node[i] + move[i]
-            if self.located_within_board(new_node):
+            if self.validate_within_bounds(new_node) and self.validate_barrier_clear(curr_node, new_node):
                 new_nodes.append(list(new_node))
+
+        #TODO: Filter for going over barriers
 
         teleport = self.teleport(curr_node)
         if self.teleport(curr_node) is not None:
@@ -301,7 +385,7 @@ class Knight():
         height = self.board.get_height()
         first_iteration = True
         for pos in node_sequence:
-            if self.located_within_board(pos):
+            if self.validate_within_bounds(pos):
                 pass
             else:
                 return False
@@ -386,6 +470,7 @@ class KnightTester(unittest.TestCase):
 
     def test_validate_node_sequence__rich_print(self):
         """
+        ###Problem 1: Board print between moves activated
         Tests basic moves, including 0,0 edge case.
         """
         import StringIO
@@ -533,12 +618,12 @@ class KnightTester(unittest.TestCase):
         with self.assertRaises(Exception):
             out_pos = self.k.teleport(teleport_in)
 
-    def test_located_within_board(self):
-        self.assertTrue(self.k.located_within_board([0,0]))
-        self.assertTrue(self.k.located_within_board([0,1]))
-        self.assertTrue(self.k.located_within_board([4,5]))
-        self.assertFalse(self.k.located_within_board([-1,0]))
-        self.assertFalse(self.k.located_within_board([-2,-5]))
+    def test_validate_within_bounds(self):
+        self.assertTrue(self.k.validate_within_bounds([0,0]))
+        self.assertTrue(self.k.validate_within_bounds([0,1]))
+        self.assertTrue(self.k.validate_within_bounds([4,5]))
+        self.assertFalse(self.k.validate_within_bounds([-1,0]))
+        self.assertFalse(self.k.validate_within_bounds([-2,-5]))
 
     def test_get_possible_nodes(self):
         """
@@ -612,32 +697,82 @@ class KnightTester(unittest.TestCase):
         self.assertEqual(self.k.journey_map.get_board(), expected_journey_map)
 
     def test_plan_path(self):
+        """
+        """
         self.k.plan_path()
 
     def test_reconstruct_path_8x8(self):
         self.k.plan_path()
+        # print "*"*40
         path = self.k.reconstruct_path()
-        print path
         for step in path:
+            # print self.k.cost_map.get_element(step)
             my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
-            print my_str + "Node: " + str(step)
+            # print my_str + "Node: " + str(step)
 
     def test_reconstruct_path_32x32(self):
         self.k = Knight('32x32_board.txt', start_pos = [0,0], target_pos = [31,31] )
+        self.k.board.get_board()[5][8] = '.'
         self.k.plan_path()
+
+        #Show Journey
         path = self.k.reconstruct_path()
+        print_str = ''
         for step in path:
             my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
-            print my_str + "Node: " + str(step)
+            print_str = print_str + my_str + "Node: " + str(step)
 
         journey = {}
+        journey_cost = {}
         for step in enumerate(path):
             step_num = step[0]
             step_node = step[1]
             journey[step_num] = step_node
+            journey_cost[self.k.cost_map.get_element(step_node)] = step_node
 
-        self.k.cost_map.display_board(pieces = journey)
+        print print_str
+        # self.k.cost_map.display_board(pieces = journey)
         self.k.board.display_board(pieces = journey)
+        self.k.board.display_board(pieces = journey_cost)
+
+    def test_validate_barrier_clear__pass(self):
+        """
+        Test that barriers can be detected appropriately.
+        """
+        self.k = Knight('32x32_board.txt', start_pos = [0,0], target_pos = [31,31] )
+
+        curr_node = [0,7]
+        next_node = [1,9]
+        valid = self.k.validate_barrier_clear(curr_node, next_node)
+        self.assertFalse(valid)
+
+        curr_node = [0,7]
+        next_node = [1,5]
+        valid = self.k.validate_barrier_clear(curr_node, next_node)
+        self.assertTrue(valid)
+
+        #negative dx and dy cases
+        next_node = [0,7]
+        curr_node = [1,9]
+        valid = self.k.validate_barrier_clear(curr_node, next_node)
+        self.assertFalse(valid)
+
+        next_node = [0,7]
+        curr_node = [1,5]
+        valid = self.k.validate_barrier_clear(curr_node, next_node)
+        self.assertTrue(valid)
+
+    def test_validate_barrier_clear__aggressive_corner(self):
+        self.k = Knight('32x32_board.txt', start_pos = [0,0], target_pos = [31,31] )
+
+        curr_node = [6,7]
+        next_node = [8,8]
+        valid = self.k.validate_barrier_clear(curr_node, next_node, aggressive = True)
+        self.assertFalse(valid)
+
+        valid = self.k.validate_barrier_clear(curr_node, next_node, aggressive = False)
+        self.assertTrue(valid)
+
 
 if __name__ == '__main__':
     k = Knight('8x8_board.txt')
