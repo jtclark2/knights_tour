@@ -20,6 +20,10 @@ Level 4: Again, same as 2,3. It's just a matter of swapping the cost function.
     In the special cases of teleportation, and barriers, I chose to modify
     the legal moves that were generated. It just made more logical sense
     updating the node_generation method.
+Level 5:
+    Just a thought, but...plan the plan with a heuristic that iterates,
+    using the last map as the heuristic for the next. It would be slow,
+    but might get the job done.
 
 Major Assumption: This space is fully searchable, since the board is 32x32,
 meaning that 1024 positions exist, each with 8 possible moves. This is well
@@ -300,6 +304,13 @@ class Knight():
 
         return new_nodes
 
+    def set_cost(self):
+        """
+        Might help for problem 5, when the objective changes
+        """
+        pass
+    passdef
+
     def get_cost(self, value):
         """
         Return cost for a move to a specific destination.
@@ -335,19 +346,6 @@ class Knight():
         if tele[1] == curr_pos:
             return tele[0]
 
-    # def create_cost_board(self, board):
-    #     """
-    #     May have jumped the gun here...doesn't seem to be needed.
-    #     """
-    #     self.cost_board = self.board
-    #     cost_board = self.cost_board.get_board()
-    #     for row in enumerate(self.cost_board.get_board()):
-    #         for element in enumerate(row[1]):
-    #             value = element[1]
-    #             cost_board[row[0]][element[0]] = self.get_cost(value)
-
-    #     # self.cost_board.display_board()
-
     def display_knight(self, pos = None):
         """
         Displays the location of the knight on the board.
@@ -360,7 +358,7 @@ class Knight():
 
     def validate_node_sequence(self, node_sequence, rich_print = False):
         """
-        Note: Problem 1
+        Note: Problem 1 
 
         Purpose:
             Validate moves to be of the format allowable by a knight...
