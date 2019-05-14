@@ -309,7 +309,6 @@ class Knight():
         Might help for problem 5, when the objective changes
         """
         pass
-    passdef
 
     def get_cost(self, value):
         """
@@ -774,5 +773,6 @@ class KnightTester(unittest.TestCase):
 
 if __name__ == '__main__':
     k = Knight('8x8_board.txt')
+    unittest.main()
     # k.display_knight()
-    k.create_cost_board(k.board)
+    #k.create_cost_board(k.board)
