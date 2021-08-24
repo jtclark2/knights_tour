@@ -1,7 +1,6 @@
 """
 Created by: Trevor Clark
 Created on: 4/27/2017
-Future Improvements: 
 """
 
 import unittest
@@ -87,7 +86,9 @@ class Board:
 
     def read_board(self, file_path):
         """
-        Reads the board and loads into a list of lists.
+        Reads the board from a text file, parsing and loading memory as a list of lists
+        to represent the 2D configuration.
+        TODO: should probably just use 2D numpy array
         File Format: ' ' delimits elements in a row, and '\n' delimits between rows
         Assumptions/Limitations: Does not handle/pad non-rectangular boards.
         """
@@ -98,7 +99,6 @@ class Board:
         self.board = []
         for row in rows:
             self.board.append(row.split(" "))
-        # return self.boards
 
     def write_board(self, board=None, write_path="./temp_board"):
         """
@@ -197,7 +197,7 @@ class BoardTester(unittest.TestCase):
         """
         Purpose: Verify that values are read into each position correctly
         """
-        self.B.read_board("./8x8_board.txt")
+        self.B.read_board("Boards/8x8_board.txt")
         for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
             for element_ground, element_read in zip(row_ground, row_read):
                 self.assertEqual(element_ground, element_read)
@@ -212,7 +212,7 @@ class BoardTester(unittest.TestCase):
         self.board_ground_truth[5][3] = "S"  # Overwrite the correct data
 
         match = True
-        self.B.read_board("./8x8_board.txt")
+        self.B.read_board("Boards/8x8_board.txt")
         for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
             for element_ground, element_read in zip(row_ground, row_read):
                 if element_ground != element_read:
@@ -224,7 +224,7 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that the board dimensions match the .txt file
         Assumptions: 8x8_board.txt is well formatted, and represents an 8x8
         """
-        self.B.read_board("./8x8_board.txt")
+        self.B.read_board("Boards/8x8_board.txt")
         self.assertEqual(len(self.B.board), 8)  # column count
         self.assertEqual(len(self.B.board[0]), 8)  # row count
 
@@ -241,7 +241,7 @@ class BoardTester(unittest.TestCase):
         self.B.write_board(self.board_ground_truth)
 
         # Read test data
-        with open("8x8_board.txt", "r", encoding="utf-8") as file:
+        with open("Boards/8x8_board.txt", "r", encoding="utf-8") as file:
             raw_board_ground_truth = file.read()
         with open("temp_board", "r", encoding="utf-8") as file:
             raw_board_written = file.read()

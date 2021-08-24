@@ -42,7 +42,7 @@ import board
 
 
 class Knight:
-    def __init__(self, board_path, start_pos=None, target_pos=None):
+    def __init__(self, board_path=None, start_pos=None, target_pos=None):
         """
         Initialize the knight on the board.
         Inputs:
@@ -395,8 +395,6 @@ class Knight:
                 "Error: No board loaded. Load a board before moving your pieces."
             )
 
-        width = self.board.get_width()
-        height = self.board.get_height()
         first_iteration = True
         for pos in node_sequence:
             if self.validate_within_bounds(pos):
@@ -438,7 +436,7 @@ class KnightTester(unittest.TestCase):
         """
         Setup the board, and place the knight
         """
-        self.k = Knight("8x8_board.txt")
+        self.k = Knight("Boards/8x8_board.txt")
         self.str_board_truth = self.k.board
 
     def test_display_knight__pass(self):
@@ -580,7 +578,7 @@ class KnightTester(unittest.TestCase):
             "2 adjascent positions represent a move that a"
             "knight is not permitted to make."
         )
-        self.assertRegexpMatches(self.k.error_context, error_phrase)
+        self.assertRegex(self.k.error_context, error_phrase)
 
     @unittest.skip(
         "Never used this - didn't make sense to create methods "
@@ -598,7 +596,7 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = [11, 26]
         teleport_out = [23, 27]
-        self.k = Knight("32x32_board.txt", teleport_in)
+        self.k = Knight("Boards/32x32_board.txt", teleport_in)
         # print '\n'
         # self.k.display_knight()
         out_pos = self.k.teleport(teleport_in)
@@ -612,7 +610,7 @@ class KnightTester(unittest.TestCase):
         start_pos = [15, 20]
         # teleport_in = [11,26]
         # teleport_out = [23,27]
-        self.k = Knight("32x32_board.txt", start_pos)
+        self.k = Knight("Boards/32x32_board.txt", start_pos)
         out_pos = self.k.teleport(start_pos)
         self.assertEqual(out_pos, None)
 
@@ -622,7 +620,7 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = [11, 26]
         teleport_out = [23, 27]
-        self.k = Knight("32x32_board.txt", teleport_in)
+        self.k = Knight("Boards/32x32_board.txt", teleport_in)
         self.k.board.board[15][20] = "T"
         with self.assertRaises(Exception):
             out_pos = self.k.teleport(teleport_in)
@@ -654,7 +652,7 @@ class KnightTester(unittest.TestCase):
         A few extra checks, since python list copies tend to do everything by reference.
         Future cleanup: Probably should have started with NumPy.
         """
-        board_template = "8x8_board.txt"
+        board_template = "Boards/8x8_board.txt"
         start_pos = [1, 1]
         self.k = Knight(board_template, start_pos)
 
@@ -708,10 +706,12 @@ class KnightTester(unittest.TestCase):
 
         self.assertEqual(self.k.journey_map.get_board(), expected_journey_map)
 
+    # TODO: figure out what this really tests
     def test_plan_path(self):
         """ """
         self.k.plan_path()
 
+    # TODO: figure out what this really tests
     def test_reconstruct_path_8x8(self):
         self.k.plan_path()
         # print "*"*40
@@ -722,7 +722,7 @@ class KnightTester(unittest.TestCase):
             # print my_str + "Node: " + str(step)
 
     def test_reconstruct_path_32x32(self):
-        self.k = Knight("32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
+        self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
         self.k.board.get_board()[5][8] = "."
         self.k.plan_path()
 
@@ -750,7 +750,7 @@ class KnightTester(unittest.TestCase):
         """
         Test that barriers can be detected appropriately.
         """
-        self.k = Knight("32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
+        self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
 
         curr_node = [0, 7]
         next_node = [1, 9]
@@ -774,7 +774,7 @@ class KnightTester(unittest.TestCase):
         self.assertTrue(valid)
 
     def test_validate_barrier_clear__aggressive_corner(self):
-        self.k = Knight("32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
+        self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
 
         curr_node = [6, 7]
         next_node = [8, 8]
@@ -786,7 +786,7 @@ class KnightTester(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    k = Knight("8x8_board.txt")
+    k = Knight("Boards/8x8_board.txt")
     unittest.main()
     # k.display_knight()
     # k.create_cost_board(k.board)

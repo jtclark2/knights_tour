@@ -1,9 +1,6 @@
 install:
-	pip install --upgrade pip
-# 	pip install -r requirements.txt
-	pip install black
-	pip install pylint
-	pip install pytest
+	pip3 install --upgrade pip
+	pip install -r requirements.txt
 
 format:
 	black *.py
@@ -12,12 +9,6 @@ lint:
 	pylint --disable=R,C *.py
 
 test:
-    # TODO: run via pytest commands (currently, the tests are also the entry point)
-	python board.py
-	python knight.py
+	pytest -v *.py
 
-save_requirements:
-	pip freeze > requirements.txt
-# 	conda env export > environment.yml
-
-all: install format lint test build_env
+all: install format test lint
