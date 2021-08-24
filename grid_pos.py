@@ -1,4 +1,4 @@
-class grid_pos:
+class GridPos:
     """
     Coordinates of tiles/spaces on the board
     """
@@ -13,10 +13,16 @@ class grid_pos:
         return False
 
     def __add__(self, other):
-        return grid_pos(self.x + other.x, self.y + other.y)
+        return GridPos(self.x + other.x, self.y + other.y)
 
-    def __add__(self, other):
-        return grid_pos(self.x - other.x, self.y - other.y)
+    def __sub__(self, other):
+        return GridPos(self.x - other.x, self.y - other.y)
+
+    def __floordiv__(self, other):
+        return GridPos(self.x // other.x, self.y // other.y)
+
+    def __abs__(self):
+        return GridPos(abs(self.x), abs(self.y))
 
     def __repr__(self):
         return "coord(%r, %r)" % (self.x, self.y)

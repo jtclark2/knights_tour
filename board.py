@@ -4,14 +4,15 @@ Created on: 4/27/2017
 """
 
 import unittest
+from grid_pos import GridPos
 
 
 class Board:
     def __init__(self, board_path=None):
         if board_path is None:
-            self.board = None
+            self._board = None
         else:
-            self.read_board(board_path)
+            self.load_board(board_path)
 
     def _board_as_str(self, board=None):
         """
@@ -25,8 +26,8 @@ class Board:
             default.
         """
         if board is None:
-            assert self.board is not None
-            board = [row for row in self.board]
+            assert self._board is not None
+            board = [row for row in self._board]
 
         board_str = ""
         for row in board:
@@ -40,51 +41,51 @@ class Board:
     def reset_board(self, value=None):
         for i in range(self.get_width()):
             for j in range(self.get_height()):
-                self.set_element([i, j], value)
+                # TODO: Why? This makes no sense...Was I in the zone, or just really tired?
+                self.set_element(GridPos(i, j), value)
 
     def get_board(self):
-        return self.board
+        return self._board
 
-    def get_element(self, pos):
+    def get_piece(self, pos):
         """
         Retrieve an element by index.
-        Input: Index ([y,x])
+        Input: Index pos
         Output: Element Value (assumed to be a char)
         """
-        return self.board[pos[0]][pos[1]]
+        return self._board[pos.x][pos.y]
 
     def set_element(self, pos, value):
-        self.board[pos[0]][pos[1]] = value
+        self._board[pos.x][pos.y] = value
 
     def find_element(self, search_value):
         """
-        Finds a specific element on the board. Finds only the first,
-        and returns its location.
+        Finds all locations of a specific element on the board.
         Inputs: The element value to search for.
         Outputs: List of element locations [y, x]
         """
         matches = []
-        for row in enumerate(self.board):
+        for row in enumerate(self._board):
             for element in enumerate(row[1]):
                 if element[1] == search_value:
-                    matches.append([row[0], element[0]])
+                    matches.append( GridPos(row[0], element[0]) )
         return matches
 
     def get_width(self):
         """
         Calculate and return the width, or number of columns.
         """
-        assert self.board
-        return len(self.board[0])
+        assert self._board
+        return len(self._board[0])
 
     def get_height(self):
         """
         Calculate and return the height, or number of rows.
         """
-        assert self.board
-        return len(self.board)
+        assert self._board
+        return len(self._board)
 
-    def read_board(self, file_path):
+    def load_board(self, file_path):
         """
         Reads the board from a text file, parsing and loading memory as a list of lists
         to represent the 2D configuration.
@@ -96,9 +97,9 @@ class Board:
             raw_board = file.read()
 
         rows = raw_board.split("\n")
-        self.board = []
+        self._board = []
         for row in rows:
-            self.board.append(row.split(" "))
+            self._board.append(row.split(" "))
 
     def write_board(self, board=None, write_path="./temp_board"):
         """
@@ -131,10 +132,10 @@ class Board:
                 on the board, over the underlying space.
         """
         # Clean copy, so python doesn't pass the reference
-        board_copy = [row[:] for row in self.board]
+        board_copy = [row[:] for row in self._board]
         if pieces is not None:
             for piece in pieces:
-                board_copy[pieces[piece][0]][pieces[piece][1]] = piece
+                board_copy[pieces[piece].x][pieces[piece].y] = piece
 
         print("\n" + self._board_as_str(board_copy))
 
@@ -168,8 +169,8 @@ class BoardTester(unittest.TestCase):
         )
 
     def test_get_element_pass(self):
-        self.B.board = self.board_ground_truth
-        element = self.B.get_element([2, 1])
+        self.B._board = self.board_ground_truth
+        element = self.B.get_piece(GridPos(2, 1))
         self.assertEqual(element, "S")
 
     @unittest.skip(
@@ -183,22 +184,22 @@ class BoardTester(unittest.TestCase):
         """
         Grabs the actual grid, list of lists, in the board object.
         """
-        self.assertEqual(self.B.board, self.B.get_board())
+        self.assertEqual(self.B._board, self.B.get_board())
 
     def test_get_width(self):
-        self.B.board = self.board_ground_truth[:-1]
+        self.B._board = self.board_ground_truth[:-1]
         self.assertEqual(self.B.get_width(), 8)
 
     def test_get_height(self):
-        self.B.board = self.board_ground_truth[:-1]
+        self.B._board = self.board_ground_truth[:-1]
         self.assertEqual(self.B.get_height(), 7)
 
     def test_read_board_data_verification(self):
         """
         Purpose: Verify that values are read into each position correctly
         """
-        self.B.read_board("Boards/8x8_board.txt")
-        for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
+        self.B.load_board("Boards/8x8_board.txt")
+        for row_ground, row_read in zip(self.board_ground_truth, self.B._board):
             for element_ground, element_read in zip(row_ground, row_read):
                 self.assertEqual(element_ground, element_read)
 
@@ -212,8 +213,8 @@ class BoardTester(unittest.TestCase):
         self.board_ground_truth[5][3] = "S"  # Overwrite the correct data
 
         match = True
-        self.B.read_board("Boards/8x8_board.txt")
-        for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
+        self.B.load_board("Boards/8x8_board.txt")
+        for row_ground, row_read in zip(self.board_ground_truth, self.B._board):
             for element_ground, element_read in zip(row_ground, row_read):
                 if element_ground != element_read:
                     match = False
@@ -224,9 +225,9 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that the board dimensions match the .txt file
         Assumptions: 8x8_board.txt is well formatted, and represents an 8x8
         """
-        self.B.read_board("Boards/8x8_board.txt")
-        self.assertEqual(len(self.B.board), 8)  # column count
-        self.assertEqual(len(self.B.board[0]), 8)  # row count
+        self.B.load_board("Boards/8x8_board.txt")
+        self.assertEqual(len(self.B._board), 8)  # column count
+        self.assertEqual(len(self.B._board[0]), 8)  # row count
 
     def test_write_board__pass(self):
         """
@@ -256,7 +257,7 @@ class BoardTester(unittest.TestCase):
         from io import StringIO
 
         print_buffer = StringIO()
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
 
         default_output = sys.stdout
         try:
@@ -278,10 +279,10 @@ class BoardTester(unittest.TestCase):
         from io import StringIO
 
         print_buffer = StringIO()
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
         str_board = "A" + self.str_board_ground_truth[1:]
         str_board = str_board[:34] + "K" + str_board[34 + 1 :]
-        pieces = {"A": [0, 0], "K": [2, 1]}
+        pieces = {"A": GridPos(0, 0), "K": GridPos(2, 1)}
 
         default_output = sys.stdout
         try:
@@ -297,22 +298,22 @@ class BoardTester(unittest.TestCase):
         self.assertEqual(print_buffer.getvalue(), "\n" + str_board + "\n")
 
     def test_find_element__pass_single_element(self):
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
         pos = self.B.find_element("S")[0]
-        self.assertEqual(pos, [2, 1])
+        self.assertEqual(pos, GridPos(2, 1))
 
     def test_find_element__element_DNE(self):
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
         pos = self.B.find_element(5)
         self.assertEqual(pos, [])
 
     def test_reset_board(self):
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
         self.B.reset_board()
         self.assertEqual(self.B.get_board(), [[None] * 8] * 8)
 
     def test_set_element(self):
-        pos = [2, 7]
+        pos = GridPos(2, 7)
         value = 5
 
         self.board_ground_truth = [
@@ -326,9 +327,9 @@ class BoardTester(unittest.TestCase):
             [".", ".", ".", ".", ".", ".", ".", "."],
         ]
 
-        self.B.board = self.board_ground_truth
+        self.B._board = self.board_ground_truth
         self.B.set_element(pos, value)
-        self.assertEqual(self.board_ground_truth, self.B.board)
+        self.assertEqual(self.board_ground_truth, self.B._board)
 
     @unittest.skip("Just Experimenting.")
     def test_print_intercept(self):

@@ -5,7 +5,7 @@ Assumptions:
     b) The 32x32 board starts are passed in, since 'S' and 'E' were not
        pre-populated. 
 
-Level 1: Call Knight().validate_node_sequence(node_sequence, rich_print)
+Level 1: Call Knight().validate_pos_sequence(node_sequence, rich_print)
     Note that while this method fulfills the objective, a generator proved
     more useful than a validator throughout the problem.
 Level 2: Call Knight().plan_path()
@@ -39,6 +39,7 @@ Custom Dependencies:
 
 import unittest
 import board
+from grid_pos import GridPos
 
 
 class Knight:
@@ -78,8 +79,8 @@ class Knight:
         current_node = self.target_pos
         while True:
             optimal_path.append(current_node)
-            current_node = self.journey_map.get_element(current_node)
-            if current_node == None:
+            current_node = self.journey_map.get_piece(current_node)
+            if current_node is None:
                 break
 
         return list(reversed(optimal_path))
@@ -99,7 +100,7 @@ class Knight:
             self.cost_map: a board whose values represent the lowest discovered cost
                 of achieving that position.
             self.journey_map: A map of reference coordinates to the last point. This
-                can be used to recunstruct the optimal path.
+                can be used to reconstruct the optimal path.
         """
         active_list = [self.knight_pos]  # Init list with a start pos
 
@@ -164,18 +165,18 @@ class Knight:
         new_nodes = []
         for node in self.get_possible_nodes(curr_node):
             try:
-                move_cost = self.get_cost(self.board.get_element(node))
+                move_cost = self.get_cost(self.board.get_piece(node))
             except:
                 print(node)
                 print(len(self.board.get_board()))
                 print(len(self.board.get_board()[0]))
                 raise
-            path_cost = self.cost_map.get_element(curr_node)
+            path_cost = self.cost_map.get_piece(curr_node)
             extended_path_cost = path_cost + move_cost
-            last_node_cost = self.cost_map.get_element(node)
-            if self.cost_map.get_element(
+            last_node_cost = self.cost_map.get_piece(node)
+            if self.cost_map.get_piece(
                 node
-            ) == None or extended_path_cost < self.cost_map.get_element(node):
+            ) == None or extended_path_cost < self.cost_map.get_piece(node):
 
                 self.cost_map.set_element(node, extended_path_cost)
 
@@ -193,8 +194,9 @@ class Knight:
         """
         raise NotImplementedError
 
-    def validate_L_move(self, dx, dy):
-        if (abs(dx) == 2 and abs(dy) == 1) or (abs(dx) == 1 and abs(dy) == 2):
+    @staticmethod
+    def validate_L_move(delta):
+        if (abs(delta.x) == 2 and abs(delta.y) == 1) or (abs(delta.x) == 1 and abs(delta.y) == 2):
             return True
         else:
             return False
@@ -205,13 +207,39 @@ class Knight:
         Input: node = [y,x]
         Output: True if in bounds, False if outside
         """
-        y_on_board = (node[0] >= 0) and (node[0] < self.board.get_height())
-        x_on_board = (node[1] >= 0) and (node[1] < self.board.get_width())
+        y_on_board = (node.x >= 0) and (node.x < self.board.get_height())
+        x_on_board = (node.y >= 0) and (node.y < self.board.get_width())
         if x_on_board and y_on_board:
             return True
         else:
             self.error_context = "Moves are not contained on the board"
             return False
+
+    def is_horizontal_motion_clear_of_barriers(self, start_x, stop_x, y, sign):
+        """
+        Checks if jogging horizontal will collide with barrier.
+        """
+        travel_pos = GridPos(start_x, y)  # create copy, rather than reference
+        horizontal_path_clear = True
+        while (travel_pos.x != stop_x): # take 1 or 2 steps (depending on the move)
+            travel_pos += GridPos(sign, 0)  # take one step in horizontal direction
+            if self.board.get_piece(travel_pos) == "B":
+                horizontal_path_clear = False
+
+        return horizontal_path_clear
+
+    def is_vertical_motion_clear_of_barriers(self, start_y, stop_y, x, sign):
+        """
+        Checks if jogging vertical will collide with barrier
+        """
+        travel_pos = GridPos(x, start_y)  # create copy, rather than reference
+        vertical_path_clear = True
+        while (travel_pos.y != stop_y): # take 1 or 2 steps (depending on the move)
+            travel_pos += GridPos(0, sign)  # take one step in horizontal direction
+            if self.board.get_piece(travel_pos) == "B":
+                vertical_path_clear = False
+
+        return vertical_path_clear
 
     def validate_barrier_clear(self, curr_node, next_node, aggressive=False):
         """
@@ -220,91 +248,116 @@ class Knight:
         Output:
             True if path is clear of barriers
             False if barriers invalidate move
-        Assumptions: Input moves are properly formatted.
+        Assumptions: Input moves are properly formatted (L-shaped and in-bounds).
         """
-        (dy, dx) = (next_node[0] - curr_node[0]), (next_node[1] - curr_node[1])
-        # print "start"
-        if self.validate_L_move(dx, dy) == False:
-            return  # the move is not valid (probably a teleport)
+        delta = next_node - curr_node
+        if self.validate_L_move(delta) == False:
+            return  # the move is not valid (probably a teleport, so return without throwing an exception)
 
-        # print "L-checked"
-        y_sign = dy // abs(dy)
-        x_sign = dx // abs(dx)
-        # print y_sign
-        # print x_sign
+        sign = delta // abs(delta)
 
-        # X first
+        # Horizontal first --> then vertical
         # S 1 2
         # . . 3
-        x_travel = 0
-        y_travel = 0
-        x_first_path = []
-        for x_travel in range(1, abs(dx) + 1):
-            x_first_path.append([curr_node[0], curr_node[1] + x_travel * x_sign])
-        for y_travel in range(1, abs(dy) + 1):
-            x_first_path.append(
-                [curr_node[0] + y_travel * y_sign, curr_node[1] + x_travel * x_sign]
-            )
+        horizontal_first_clear = self.is_horizontal_motion_clear_of_barriers(start_x=curr_node.x,
+                                                                             stop_x=next_node.x,
+                                                                             y=curr_node.y,
+                                                                             sign=sign.x) and \
+                                 self.is_vertical_motion_clear_of_barriers(start_y=curr_node.y,
+                                                                           stop_y=next_node.y,
+                                                                           x=next_node.x,
+                                                                           sign=sign.y)
 
-        x_clear = True
-        for node in x_first_path:
-            # print node
-            # print self.board.get_element(node)
-            if self.board.get_element(node) == "B":
-                x_clear = False
-        #         print "XPATH FAIL!!!"
-        # print '\n'
-        # Y first
+
+        # Vertical first --> then horizontal
         # S . .
         # 1 2 3
-        x_travel = 0
-        y_travel = 0
-        y_first_path = []
-        for y_travel in range(1, abs(dy) + 1):
-            y_first_path.append(
-                [curr_node[0] + y_travel * y_sign, curr_node[1] + x_travel * x_sign]
-            )
-        for x_travel in range(1, abs(dx) + 1):
-            y_first_path.append(
-                [curr_node[0] + y_travel * y_sign, curr_node[1] + x_travel * x_sign]
-            )
+        vertical_first_clear = self.is_vertical_motion_clear_of_barriers(start_y=curr_node.y,
+                                                                         stop_y=next_node.y,
+                                                                         x=curr_node.x,
+                                                                         sign=sign.y) and \
+                               self.is_horizontal_motion_clear_of_barriers(start_x=curr_node.x,
+                                                                           stop_x=next_node.x,
+                                                                           y=next_node.y,
+                                                                           sign=sign.x)
 
-        y_clear = True
-        for node in y_first_path:
-            # print node
-            # print repr(self.board.get_element(node))
-            if self.board.get_element(node) == "B":
-                y_clear = False
-                # print "YPATH FAIL!!!"
+        return horizontal_first_clear or vertical_first_clear
 
-        if aggressive == True:
-            # Absolutely no obstructions! Both must be clear
-            return x_clear and y_clear
-        else:
-            # or either path is open, we're clear
-            return x_clear or y_clear
+
+        # # Horizontal first --> then vertical
+        # # S 1 2
+        # # . . 3
+        # x_travel = 0
+        # y_travel = 0
+        # x_first_path = []
+        # for x_travel in range(1, abs(delta.x) + 1):
+        #     x_first_path.append( GridPos(curr_node.x, curr_node.y + x_travel * sign.x) )
+        # for y_travel in range(1, abs(delta.y) + 1):
+        #     # TODO: might be fine, but looks confusing...why x in the y loop?
+        #     x_first_path.append(
+        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
+        #     )
+        #
+        # x_clear = True
+        # for node in x_first_path:
+        #     # print node
+        #     # print self.board.get_element(node)
+        #     if self.board.get_piece(node) == "B":
+        #         x_clear = False
+        # #         print "XPATH FAIL!!!"
+        #
+        #
+        # # Vertical first --> then horizontal
+        # # S . .
+        # # 1 2 3
+        # x_travel = 0
+        # y_travel = 0
+        # y_first_path = []
+        # for y_travel in range(1, abs(delta.y) + 1):
+        #     y_first_path.append(
+        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
+        #     )
+        # for x_travel in range(1, abs(delta.x) + 1):
+        #     y_first_path.append(
+        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
+        #     )
+        #
+        # y_clear = True
+        # for node in y_first_path:
+        #     # print node
+        #     # print repr(self.board.get_element(node))
+        #     if self.board.get_piece(node) == "B":
+        #         y_clear = False
+        #         # print "PATH FAIL!!!"
+        #
+        # if aggressive == True:
+        #     # Absolutely no obstructions! Both must be clear
+        #     return x_clear and y_clear
+        # else:
+        #     # or either path is open, we're clear
+        #     return x_clear or y_clear
 
     def get_possible_nodes(self, curr_node):
         delta_moves = [
-            [-2, -1],
-            [-2, 1],
-            [-1, -2],
-            [-1, 2],
-            [1, -2],
-            [1, 2],
-            [2, -1],
-            [2, 1],
+            GridPos(-2, -1),
+            GridPos(-2, 1),
+            GridPos(-1, -2),
+            GridPos(-1, 2),
+            GridPos(1, -2),
+            GridPos(1, 2),
+            GridPos(2, -1),
+            GridPos(2, 1),
         ]
 
         new_nodes = []
-        new_node = [None, None]
+        # TODO: looks like it's being initialized outside the loop...don't think that's needed though
+        new_node = GridPos(-1,-1) # initialize to invalid value
         for move in delta_moves:
-            for i in range(len(curr_node)):  # loop over [y,x]
-                new_node[i] = curr_node[i] + move[i]
-            if self.validate_within_bounds(new_node) and self.validate_barrier_clear(
-                curr_node, new_node
-            ):
-                new_nodes.append(list(new_node))
+            # for i in range(len(curr_node)):  # loop over [y,x]
+            #     new_node[i] = curr_node[i] + move[i]
+            new_node = curr_node + move
+            if self.validate_within_bounds(new_node) and self.validate_barrier_clear(curr_node, new_node):
+                new_nodes.append(new_node)
 
         # TODO: Filter for going over barriers
 
@@ -365,12 +418,12 @@ class Knight:
         Displays the location of the knight on the board.
         """
         display_character = "K"
-        if pos == None:
+        if pos is None:
             pos = self.knight_pos
         pieces = {display_character: pos}
         self.board.display_board(pieces=pieces)
 
-    def validate_move_sequence(self, pos_sequence, rich_print=False):
+    def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
         Note: Problem 1 from the prompt
 
@@ -406,10 +459,9 @@ class Knight:
             if first_iteration:
                 first_iteration = False
             else:
-                dx = pos_prev[0] - pos[0]
-                dy = pos_prev[1] - pos[1]
+                delta = pos_prev - pos
 
-                if self.validate_L_move(dx, dy):
+                if self.validate_L_move(delta):
                     pass
                 else:
                     self.error_context = (
@@ -471,9 +523,14 @@ class KnightTester(unittest.TestCase):
         """
         Tests basic moves, including 0,0 edge case.
         """
-        positions = [[0, 0], [2, 1], [4, 0], [3, 2], [4, 4], [6, 5]]
+        positions = [GridPos(0, 0),
+                     GridPos(2, 1),
+                     GridPos(4, 0),
+                     GridPos(3, 2),
+                     GridPos(4, 4),
+                     GridPos(6, 5)]
 
-        valid = self.k.validate_move_sequence(positions)
+        valid = self.k.validate_pos_sequence(positions)
         # print self.k.error_context
         self.assertTrue(valid)
 
@@ -485,13 +542,18 @@ class KnightTester(unittest.TestCase):
         from io import StringIO
         import sys
 
-        positions = [[0, 0], [2, 1], [4, 0], [3, 2], [4, 4], [6, 5]]
+        positions = [GridPos(0, 0),
+                     GridPos(2, 1),
+                     GridPos(4, 0),
+                     GridPos(3, 2),
+                     GridPos(4, 4),
+                     GridPos(6, 5)]
 
         print_buffer = StringIO()
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            valid = self.k.validate_move_sequence(positions, rich_print=True)
+            valid = self.k.validate_pos_sequence(positions, rich_print=True)
         finally:
             sys.stdout = default_output
         # print self.k.error_context
@@ -560,18 +622,24 @@ class KnightTester(unittest.TestCase):
         """
         Tests failure by falling off of the board
         """
-        positions = [[0, 0], [2, 1], [1, -1]]
+        positions = [
+            GridPos(0, 0),
+            GridPos(2, 1),
+            GridPos(1, -1)]
 
-        self.assertFalse(self.k.validate_move_sequence(positions))
+        self.assertFalse(self.k.validate_pos_sequence(positions))
         self.assertEqual(self.k.error_context, "Moves are not contained on the board")
 
     def test_validate_node_sequence__fail_not_valid_for_knight(self):
         """
         Tests failure by falling off of the board
         """
-        positions = [[0, 0], [2, 1], [4, 4]]
+        positions = [
+            GridPos(0, 0),
+            GridPos(2, 1),
+            GridPos(4, 4)]
 
-        self.assertFalse(self.k.validate_move_sequence(positions))
+        self.assertFalse(self.k.validate_pos_sequence(positions))
 
         error_phrase = (
             "2 adjascent positions represent a move that a"
@@ -593,8 +661,8 @@ class KnightTester(unittest.TestCase):
         Verify that teleport is able to find both locations, and return the
         correct exit locations.
         """
-        teleport_in = [11, 26]
-        teleport_out = [23, 27]
+        teleport_in = GridPos(11, 26)
+        teleport_out = GridPos(23, 27)
         self.k = Knight("Boards/32x32_board.txt", teleport_in)
         # print '\n'
         # self.k.display_knight()
@@ -606,7 +674,7 @@ class KnightTester(unittest.TestCase):
         Verify that teleport is able to find both locations, and return the
         correct exit locations.
         """
-        start_pos = [15, 20]
+        start_pos = GridPos(15, 20)
         # teleport_in = [11,26]
         # teleport_out = [23,27]
         self.k = Knight("Boards/32x32_board.txt", start_pos)
@@ -620,39 +688,45 @@ class KnightTester(unittest.TestCase):
         teleport_in = [11, 26]
         teleport_out = [23, 27]
         self.k = Knight("Boards/32x32_board.txt", teleport_in)
-        self.k.board.board[15][20] = "T"
+        self.k.board._board[15][20] = "T"
         with self.assertRaises(Exception):
             out_pos = self.k.teleport(teleport_in)
 
     def test_validate_within_bounds(self):
-        self.assertTrue(self.k.validate_within_bounds([0, 0]))
-        self.assertTrue(self.k.validate_within_bounds([0, 1]))
-        self.assertTrue(self.k.validate_within_bounds([4, 5]))
-        self.assertFalse(self.k.validate_within_bounds([-1, 0]))
-        self.assertFalse(self.k.validate_within_bounds([-2, -5]))
+        self.assertTrue(self.k.validate_within_bounds(GridPos(0, 0)))
+        self.assertTrue(self.k.validate_within_bounds(GridPos(0, 1)))
+        self.assertTrue(self.k.validate_within_bounds(GridPos(4, 5)))
+        self.assertFalse(self.k.validate_within_bounds(GridPos(-1, 0)))
+        self.assertFalse(self.k.validate_within_bounds(GridPos(-2, -5)))
 
     def test_get_possible_nodes(self):
         """
         Verify that the correct nodes are returned.
         """
-        curr_node = [1, 1]
+        curr_node = GridPos(1, 1)
         nodes = self.k.get_possible_nodes(curr_node)
-        expected_valid_nodes = [[0, 3], [3, 0], [2, 3], [3, 2]]
+        expected_valid_nodes = [GridPos(0, 3),
+                                GridPos(3, 0),
+                                GridPos(2, 3),
+                                GridPos(3, 2)]
         # These 4 nodes are expected, though order is not gauranteed
         for node in nodes:
             self.assertTrue(node in expected_valid_nodes)
 
-        expected_omitted_node = [[0, 0], [3, -1], [2, -1], [-1, 2], [-1, 0]]
+        expected_omitted_node = [GridPos(0, 0),
+                                 GridPos(3, -1),
+                                 GridPos(2, -1),
+                                 GridPos(-1, 2),
+                                 GridPos(-1, 0)]
         for node in nodes:
             self.assertFalse(node in expected_omitted_node)
 
     def test_explore_moves__single_step(self):
         """
         A few extra checks, since python list copies tend to do everything by reference.
-        Future cleanup: Probably should have started with NumPy.
         """
         board_template = "Boards/8x8_board.txt"
-        start_pos = [1, 1]
+        start_pos = GridPos(1, 1)
         self.k = Knight(board_template, start_pos)
 
         self.k.journey_map = board.Board(board_template)
@@ -662,20 +736,26 @@ class KnightTester(unittest.TestCase):
 
         self.k.cost_map.set_element(start_pos, 0)
 
-        ###make sure the appropriate nodes are found
+        # make sure the appropriate nodes are found
         nodes = self.k.explore_moves(start_pos)
 
-        expected_valid_nodes = [[0, 3], [3, 0], [2, 3], [3, 2]]
-        # These 4 nodes are expected, though order is not gauranteed
+        expected_valid_nodes = [GridPos(0, 3),
+                                GridPos(3, 0),
+                                GridPos(2, 3),
+                                GridPos(3, 2)]
+        # These 4 nodes are expected, though order is not guaranteed
         for node in nodes:
             self.assertTrue(node in expected_valid_nodes)
 
-        expected_omitted_node = [[0, 0], [3, -1], [2, -1], [-1, 2], [-1, 0]]
+        expected_omitted_node = [GridPos(0, 0),
+                                 GridPos(3, -1),
+                                 GridPos(2, -1),
+                                 GridPos(-1, 2),
+                                 GridPos(-1, 0)]
         for node in nodes:
             self.assertFalse(node in expected_omitted_node)
 
         ###make sure the cost_map updates
-        # self.k.cost_map.display_board()
         expected_cost_map = [
             [None, None, None, 1, None, None, None, None],
             [None, 0, None, None, None, None, None, None],
@@ -689,14 +769,11 @@ class KnightTester(unittest.TestCase):
 
         self.assertEqual(self.k.cost_map.get_board(), expected_cost_map)
 
-        ###make sure the journey_map updates
-        # self.k.journey_map.display_board()
-
         expected_journey_map = [
-            [None, None, None, [1, 1], None, None, None, None],
+            [None, None, None, GridPos(1, 1), None, None, None, None],
             [None, None, None, None, None, None, None, None],
-            [None, None, None, [1, 1], None, None, None, None],
-            [[1, 1], None, [1, 1], None, None, None, None, None],
+            [None, None, None, GridPos(1, 1), None, None, None, None],
+            [GridPos(1, 1), None, GridPos(1, 1), None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
             [None, None, None, None, None, None, None, None],
@@ -717,11 +794,12 @@ class KnightTester(unittest.TestCase):
         path = self.k.reconstruct_path()
         for step in path:
             # print self.k.cost_map.get_element(step)
-            my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
+            my_str = "Cost: %i \t" % self.k.cost_map.get_piece(step)
             # print my_str + "Node: " + str(step)
 
     def test_reconstruct_path_32x32(self):
-        self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
+
+        self.k = Knight("Boards/32x32_board.txt", start_pos=GridPos(0, 0), target_pos=GridPos(31, 31))
         self.k.board.get_board()[5][8] = "."
         self.k.plan_path()
 
@@ -729,7 +807,7 @@ class KnightTester(unittest.TestCase):
         path = self.k.reconstruct_path()
         print_str = ""
         for step in path:
-            my_str = "Cost: %i \t" % self.k.cost_map.get_element(step)
+            my_str = "Cost: %i \t" % self.k.cost_map.get_piece(step)
             print_str = print_str + my_str + "Node: " + str(step)
 
         journey = {}
@@ -738,7 +816,7 @@ class KnightTester(unittest.TestCase):
             step_num = step[0]
             step_node = step[1]
             journey[step_num] = step_node
-            journey_cost[self.k.cost_map.get_element(step_node)] = step_node
+            journey_cost[self.k.cost_map.get_piece(step_node)] = step_node
 
         print(print_str)
         # self.k.cost_map.display_board(pieces = journey)
@@ -749,34 +827,35 @@ class KnightTester(unittest.TestCase):
         """
         Test that barriers can be detected appropriately.
         """
-        self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
+        self.k = Knight("Boards/32x32_board.txt", start_pos=GridPos(0, 0), target_pos=GridPos(31, 31))
 
-        curr_node = [0, 7]
-        next_node = [1, 9]
+        curr_node = GridPos(0, 7)
+        next_node = GridPos(1, 9)
         valid = self.k.validate_barrier_clear(curr_node, next_node)
         self.assertFalse(valid)
 
-        curr_node = [0, 7]
-        next_node = [1, 5]
+        curr_node = GridPos(0, 7)
+        next_node = GridPos(1, 5)
         valid = self.k.validate_barrier_clear(curr_node, next_node)
         self.assertTrue(valid)
 
-        # negative dx and dy cases
-        next_node = [0, 7]
-        curr_node = [1, 9]
+        # negative dx and dy cases (reverse the nodes)
+        curr_node = GridPos(1, 9)
+        next_node = GridPos(0, 7)
         valid = self.k.validate_barrier_clear(curr_node, next_node)
         self.assertFalse(valid)
 
-        next_node = [0, 7]
-        curr_node = [1, 5]
+        curr_node = GridPos(1, 5)
+        next_node = GridPos(0, 7)
         valid = self.k.validate_barrier_clear(curr_node, next_node)
         self.assertTrue(valid)
 
+    @unittest.skip("Deprecated: This is not what the prompt was asking, and I see no added value")
     def test_validate_barrier_clear__aggressive_corner(self):
         self.k = Knight("Boards/32x32_board.txt", start_pos=[0, 0], target_pos=[31, 31])
 
-        curr_node = [6, 7]
-        next_node = [8, 8]
+        curr_node = GridPos(6, 7)
+        next_node = GridPos(8, 8)
         valid = self.k.validate_barrier_clear(curr_node, next_node, aggressive=True)
         self.assertFalse(valid)
 
