@@ -33,9 +33,9 @@ class Board():
         for row in board: 
             for element in row:
                 board_str = board_str + ("%s " % element )
-            board_str = board_str[:-1]  #remove trailing ' '
+            board_str = board_str[:-1]  # remove trailing ' '
             board_str = board_str + "\n"
-        board_str = board_str[:-1]  #remove trailing '\n'
+        board_str = board_str[:-1]  # remove trailing '\n'
         return board_str
 
     def reset_board(self, value = None):
@@ -54,7 +54,7 @@ class Board():
         """
         return self.board[pos[0]][pos[1]]
 
-    def set_element(self,pos,value):
+    def set_element(self, pos, value):
         self.board[pos[0]][pos[1]] = value
 
 
@@ -137,7 +137,7 @@ class Board():
             for piece in pieces:
                 board_copy[pieces[piece][0]][pieces[piece][1]] = piece
 
-        print '\n' + self._board_as_str(board_copy)
+        print('\n' + self._board_as_str(board_copy))
 
 class BoardTester(unittest.TestCase):
 
@@ -248,9 +248,9 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that base case of board display works
         """
         import sys
-        import StringIO
+        from io import StringIO
 
-        print_buffer = StringIO.StringIO()
+        print_buffer = StringIO()
         self.B.board = self.board_ground_truth
         
         default_output = sys.stdout
@@ -269,9 +269,9 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify board display works when passing in chars.
         """
         import sys
-        import StringIO
+        from io import StringIO
 
-        print_buffer = StringIO.StringIO()
+        print_buffer = StringIO()
         self.B.board = self.board_ground_truth
         str_board = ('A' + self.str_board_ground_truth[1:])
         str_board = (str_board[:34]+'K'
@@ -327,12 +327,12 @@ class BoardTester(unittest.TestCase):
     @unittest.skip("Just Experimenting.")
     def test_print_intercept(self):
         import sys
-        import StringIO
+        from io import StringIO
         print_buffer = StringIO.StringIO()
         sys.stdout = print_buffer
-        print "intercepted?"
+        print( "intercepted?")
         sys.stdout = sys.__stdout__
-        print print_buffer.getvalue()
+        print( print_buffer.getvalue())
 
 if __name__ == "__main__":
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(BoardTester)

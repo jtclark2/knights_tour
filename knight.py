@@ -167,9 +167,9 @@ class Knight():
             try:
                 move_cost = self.get_cost(self.board.get_element(node))
             except:
-                print node
-                print len(self.board.get_board())
-                print len(self.board.get_board()[0])
+                print(node)
+                print(len(self.board.get_board()))
+                print(len(self.board.get_board()[0]))
                 raise
             path_cost = self.cost_map.get_element(curr_node)
             extended_path_cost = path_cost + move_cost
@@ -228,8 +228,8 @@ class Knight():
             return #the move is not valid (probably a teleport)
 
         # print "L-checked"
-        y_sign = dy/abs(dy)
-        x_sign = dx/abs(dx)
+        y_sign = dy//abs(dy)
+        x_sign = dx//abs(dx)
         # print y_sign
         # print x_sign
 
@@ -427,7 +427,7 @@ class KnightTester(unittest.TestCase):
         Verify that display displays the board with the knight properly placed.
         """
         import sys
-        import StringIO
+        from io import StringIO
 
         str_board_ground_truth = ( ". . . . . . . .\n"
                                    ". . . . . . . .\n"
@@ -438,7 +438,7 @@ class KnightTester(unittest.TestCase):
                                    ". . . . . . . .\n"
                                    ". . . . . . . .")
 
-        print_buffer = StringIO.StringIO()
+        print_buffer = StringIO()
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
@@ -470,7 +470,7 @@ class KnightTester(unittest.TestCase):
         ###Problem 1: Board print between moves activated
         Tests basic moves, including 0,0 edge case.
         """
-        import StringIO
+        from io import StringIO
         import sys
         positions = [[0,0],
                      [2,1],
@@ -479,7 +479,7 @@ class KnightTester(unittest.TestCase):
                      [4,4],
                      [6,5]]
 
-        print_buffer = StringIO.StringIO()
+        print_buffer = StringIO()
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
@@ -727,7 +727,7 @@ class KnightTester(unittest.TestCase):
             journey[step_num] = step_node
             journey_cost[self.k.cost_map.get_element(step_node)] = step_node
 
-        print print_str
+        print(print_str)
         # self.k.cost_map.display_board(pieces = journey)
         self.k.board.display_board(pieces = journey)
         self.k.board.display_board(pieces = journey_cost)
