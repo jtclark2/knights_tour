@@ -189,7 +189,7 @@ class Knight:
 
     def move_heuristic(self):
         """
-        Provide heurist of distance remaining.
+        Provide heuristic of distance remaining.
         """
         raise NotImplementedError
 
@@ -370,23 +370,25 @@ class Knight:
         pieces = {display_character: pos}
         self.board.display_board(pieces=pieces)
 
-    def validate_node_sequence(self, node_sequence, rich_print=False):
+    def validate_move_sequence(self, pos_sequence, rich_print=False):
         """
-        Note: Problem 1
+        Note: Problem 1 from the prompt
 
         Purpose:
-            Validate moves to be of the format allowable by a knight...
-            2 spaces in a direction(x,y), 1 space in the other direction.
+            Validates that a sequence of moves is valid for the knight to make:
+                - 2 spaces in a direction(x,y), 1 space in the other direction.
+                - Remains in bounds
+
 
         Assumptions:
             Board exists: checked explicitly.
             Board is rectangular: assumed as property of a board.
 
         Inputs:
-            move_sequence: A list of positions of the form [x,y]
+            move_sequence: A list of absolute positions, representing the target position after each move
 
-        Outputs:
-            True/False validity of move
+        Output:
+            bool: Whether the sequence of moves is valid
         """
 
         # Apply board conditions, if they exist
@@ -396,10 +398,8 @@ class Knight:
             )
 
         first_iteration = True
-        for pos in node_sequence:
-            if self.validate_within_bounds(pos):
-                pass
-            else:
+        for pos in pos_sequence:
+            if not self.validate_within_bounds(pos):
                 return False
 
             # First iteration, we have no previous pos to compare against
@@ -409,8 +409,7 @@ class Knight:
                 dx = pos_prev[0] - pos[0]
                 dy = pos_prev[1] - pos[1]
 
-                # Is the delta-pos an L-shaped knight move?
-                if (abs(dx) == 2 and abs(dy) == 1) or (abs(dx) == 1 and abs(dy) == 2):
+                if self.validate_L_move(dx, dy):
                     pass
                 else:
                     self.error_context = (
@@ -474,7 +473,7 @@ class KnightTester(unittest.TestCase):
         """
         positions = [[0, 0], [2, 1], [4, 0], [3, 2], [4, 4], [6, 5]]
 
-        valid = self.k.validate_node_sequence(positions)
+        valid = self.k.validate_move_sequence(positions)
         # print self.k.error_context
         self.assertTrue(valid)
 
@@ -492,7 +491,7 @@ class KnightTester(unittest.TestCase):
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            valid = self.k.validate_node_sequence(positions, rich_print=True)
+            valid = self.k.validate_move_sequence(positions, rich_print=True)
         finally:
             sys.stdout = default_output
         # print self.k.error_context
@@ -563,7 +562,7 @@ class KnightTester(unittest.TestCase):
         """
         positions = [[0, 0], [2, 1], [1, -1]]
 
-        self.assertFalse(self.k.validate_node_sequence(positions))
+        self.assertFalse(self.k.validate_move_sequence(positions))
         self.assertEqual(self.k.error_context, "Moves are not contained on the board")
 
     def test_validate_node_sequence__fail_not_valid_for_knight(self):
@@ -572,7 +571,7 @@ class KnightTester(unittest.TestCase):
         """
         positions = [[0, 0], [2, 1], [4, 4]]
 
-        self.assertFalse(self.k.validate_node_sequence(positions))
+        self.assertFalse(self.k.validate_move_sequence(positions))
 
         error_phrase = (
             "2 adjascent positions represent a move that a"
