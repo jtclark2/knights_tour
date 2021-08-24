@@ -1,4 +1,5 @@
 TODO: Future Improvements:
+    - Create Enums for all the special objects (currently uses characters)
     - Split testing into separate file(s)
     - Use numpy (why did I use nested lists to begin with?)
     - Decouple board display from internal representation
