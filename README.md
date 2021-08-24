@@ -1,9 +1,14 @@
-# KnightBoard
+# KnightBoard Problem Statement
+This repo addressing a series of increasingly complex maze/pathfinding problems, which can be 
+treated as heuristic searches.
 
+Complexity increases with each problem, adding obstacles, teleports, etc.
 
-Knights Board: An interesting path finding problem.
-Complexity increases with each problem, eventually adding obstacles, teleports, etc.
+See KnightBoard.pdf for detailed coding prompt. (This was originally a take home problem. It
+was not my own; however, I can't remember the source now)
 
-See KnightBoard.pdf for detailed coding prompt. 
+# Author: 
+Trevor Clark
 
-Author: Trevor Clark
+# Setup
+TBD
