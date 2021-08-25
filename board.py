@@ -10,7 +10,7 @@ from grid_pos import GridPos
 class Board:
     def __init__(self, board_path=None):
         if board_path is None:
-            self._board = None
+            self.board = None
         else:
             self.load_board(board_path)
 
@@ -21,7 +21,7 @@ class Board:
                 self.set_element(GridPos(i, j), value)
 
     def get_board(self):
-        return self._board
+        return self.board
 
     def get_piece(self, pos):
         """
@@ -29,10 +29,10 @@ class Board:
         Input: Index pos
         Output: Element Value (assumed to be a char)
         """
-        return self._board[pos.x][pos.y]
+        return self.board[pos.x][pos.y]
 
     def set_element(self, pos, value):
-        self._board[pos.x][pos.y] = value
+        self.board[pos.x][pos.y] = value
 
     def find_element(self, search_value):
         """
@@ -41,25 +41,25 @@ class Board:
         Outputs: List of element locations [y, x]
         """
         matches = []
-        for row in enumerate(self._board):
+        for row in enumerate(self.board):
             for element in enumerate(row[1]):
                 if element[1] == search_value:
-                    matches.append( GridPos(row[0], element[0]) )
+                    matches.append(GridPos(row[0], element[0]))
         return matches
 
     def get_width(self):
         """
         Calculate and return the width, or number of columns.
         """
-        assert self._board
-        return len(self._board[0])
+        assert self.board
+        return len(self.board[0])
 
     def get_height(self):
         """
         Calculate and return the height, or number of rows.
         """
-        assert self._board
-        return len(self._board)
+        assert self.board
+        return len(self.board)
 
     def load_board(self, file_path):
         """
@@ -72,9 +72,9 @@ class Board:
             raw_board = file.read()
 
         rows = raw_board.split("\n")
-        self._board = []
+        self.board = []
         for row in rows:
-            self._board.append(row.split(" "))
+            self.board.append(row.split(" "))
 
     def write_board(self, board=None, write_path="./temp_board"):
         """
@@ -118,6 +118,7 @@ class Board:
         board_str = board_str[:-1]  # remove trailing '\n'
         return board_str
 
+
 class BoardTester(unittest.TestCase):
     def setUp(self):
         """
@@ -147,7 +148,7 @@ class BoardTester(unittest.TestCase):
         )
 
     def test_get_element_pass(self):
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         element = self.B.get_piece(GridPos(2, 1))
         self.assertEqual(element, "S")
 
@@ -162,14 +163,14 @@ class BoardTester(unittest.TestCase):
         """
         Grabs the actual grid, list of lists, in the board object.
         """
-        self.assertEqual(self.B._board, self.B.get_board())
+        self.assertEqual(self.B.board, self.B.get_board())
 
     def test_get_width(self):
-        self.B._board = self.board_ground_truth[:-1]
+        self.B.board = self.board_ground_truth[:-1]
         self.assertEqual(self.B.get_width(), 8)
 
     def test_get_height(self):
-        self.B._board = self.board_ground_truth[:-1]
+        self.B.board = self.board_ground_truth[:-1]
         self.assertEqual(self.B.get_height(), 7)
 
     def test_read_board_data_verification(self):
@@ -177,7 +178,7 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that values are read into each position correctly
         """
         self.B.load_board("Boards/8x8_board.txt")
-        for row_ground, row_read in zip(self.board_ground_truth, self.B._board):
+        for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
             for element_ground, element_read in zip(row_ground, row_read):
                 self.assertEqual(element_ground, element_read)
 
@@ -192,7 +193,7 @@ class BoardTester(unittest.TestCase):
 
         match = True
         self.B.load_board("Boards/8x8_board.txt")
-        for row_ground, row_read in zip(self.board_ground_truth, self.B._board):
+        for row_ground, row_read in zip(self.board_ground_truth, self.B.board):
             for element_ground, element_read in zip(row_ground, row_read):
                 if element_ground != element_read:
                     match = False
@@ -204,8 +205,8 @@ class BoardTester(unittest.TestCase):
         Assumptions: 8x8_board.txt is well formatted, and represents an 8x8
         """
         self.B.load_board("Boards/8x8_board.txt")
-        self.assertEqual(len(self.B._board), 8)  # column count
-        self.assertEqual(len(self.B._board[0]), 8)  # row count
+        self.assertEqual(len(self.B.board), 8)  # column count
+        self.assertEqual(len(self.B.board[0]), 8)  # row count
 
     def test_write_board__pass(self):
         """
@@ -228,17 +229,17 @@ class BoardTester(unittest.TestCase):
         self.assertEqual(raw_board_ground_truth, raw_board_written)
 
     def test_find_element__pass_single_element(self):
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         pos = self.B.find_element("S")[0]
         self.assertEqual(pos, GridPos(2, 1))
 
     def test_find_element__element_DNE(self):
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         pos = self.B.find_element(5)
         self.assertEqual(pos, [])
 
     def test_reset_board(self):
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         self.B.reset_board()
         self.assertEqual(self.B.get_board(), [[None] * 8] * 8)
 
@@ -257,9 +258,10 @@ class BoardTester(unittest.TestCase):
             [".", ".", ".", ".", ".", ".", ".", "."],
         ]
 
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         self.B.set_element(pos, value)
-        self.assertEqual(self.board_ground_truth, self.B._board)
+        self.assertEqual(self.board_ground_truth, self.B.board)
+
 
 if __name__ == "__main__":
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(BoardTester)

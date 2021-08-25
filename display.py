@@ -6,7 +6,8 @@ I may build up a more flushed out display with pygame, or something, so it shoul
 from board import Board
 from grid_pos import GridPos
 
-class TextDisplay():
+
+class TextDisplay:
     def __init__(self):
         pass
 
@@ -50,9 +51,8 @@ display = TextDisplay()
 #         return self.DisplayClass.display_board(args, kwargs)
 
 
-
-
 import unittest
+
 
 class BoardTester(unittest.TestCase):
     def setUp(self):
@@ -90,7 +90,7 @@ class BoardTester(unittest.TestCase):
         from io import StringIO
 
         print_buffer = StringIO()
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
 
         default_output = sys.stdout
         try:
@@ -112,7 +112,7 @@ class BoardTester(unittest.TestCase):
         from io import StringIO
 
         print_buffer = StringIO()
-        self.B._board = self.board_ground_truth
+        self.B.board = self.board_ground_truth
         str_board = "A" + self.str_board_ground_truth[1:]
         str_board = str_board[:34] + "K" + str_board[34 + 1 :]
         pieces = {"A": GridPos(0, 0), "K": GridPos(2, 1)}

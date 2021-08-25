@@ -26,4 +26,3 @@ class GridPos:
 
     def __repr__(self):
         return "coord(%r, %r)" % (self.x, self.y)
-
