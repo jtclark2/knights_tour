@@ -9,7 +9,9 @@ format:
 lint:
 	pylint --disable=R,C,fixme *.py
 
+# test and coverage report
 test:
-	pytest -v *.py
+	# pytest -v *.py
+	pytest -v --cov=. *.py
 
 all: install format test lint

@@ -1,5 +1,8 @@
 TODO: Future Improvements:
+    - Add comments (I wrote this, and don't understand half of what is happening anymore)
+        - simplify...I wrote some verbose stuff, and it can be much much cleaner
     - Create Enums for all the special objects (currently uses characters)
     - Split testing into separate file(s)
     - Clarify entry point: Make the solutions to the original pdf explicit and easy to find (they're kind of buried in testing right now)
     - Add test coverage (pytest-cov)
+    - rename node...or maybe I should leave it? I don't know

@@ -8,8 +8,17 @@ from grid_pos import GridPos
 
 
 class Board:
+    """
+    Manages the "board", simple object in that stores the state of the board in memory.
+        - Stores the object
+        - read/write capabilities
+        - find/read value of pieces on various spaces in the grid
+    Decoupled from any gameplay.
+    """
+
     def __init__(self, board_path=None):
         if board_path is None:
+            # TODO: Rename to board_array (so as not to be confused with the class)
             self.board = None
         else:
             self.load_board(board_path)
@@ -69,9 +78,9 @@ class Board:
         Assumptions/Limitations: Does not handle/pad non-rectangular boards.
         """
         with open(file_path, "r", encoding="utf-8") as file:
-            raw_board = file.read()
+            board_str = file.read()
 
-        rows = raw_board.split("\n")
+        rows = board_str.split("\n")
         self.board = []
         for row in rows:
             self.board.append(row.split(" "))

@@ -11,4 +11,4 @@ was not my own; however, I can't remember the source now)
 Trevor Clark
 
 # Setup
-TBD
+Create new env, and run `make all`. This will run the install scripts and a bunch of other checks.

@@ -191,7 +191,7 @@ class Knight:
 
     def validate_within_bounds(self, node):
         """
-        Check if a particular falls within bound.
+        Check if a particular position is in bound.
         Input: node = [y,x]
         Output: True if in bounds, False if outside
         """
