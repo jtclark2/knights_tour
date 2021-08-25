@@ -16,8 +16,8 @@ class Board:
 
     def __init__(self, board_path=None):
         if board_path is None:
-            # TODO: Rename to board_array (so as not to be confused with the class)
-            self.board = None
+            # TODO: Rename to board_array (so as not to be confused with the class and module)
+            self.board_grid = None
         else:
             self.load_board(board_path)
 
@@ -31,7 +31,7 @@ class Board:
 
     def get_board(self):
         #TODO: make sense when board was a property for backing var _board...not sure now
-        return self.board
+        return self.board_grid
 
     def get_piece(self, pos):
         """
@@ -39,10 +39,10 @@ class Board:
         Input: Index pos
         Output: Element/piece Value
         """
-        return self.board[pos.x][pos.y]
+        return self.board_grid[pos.x][pos.y]
 
     def set_element(self, pos, value):
-        self.board[pos.x][pos.y] = value
+        self.board_grid[pos.x][pos.y] = value
 
     def find_element(self, search_value):
         """
@@ -51,7 +51,7 @@ class Board:
         Outputs: List of element locations [y, x]
         """
         matches = []
-        for row in enumerate(self.board):
+        for row in enumerate(self.board_grid):
             for element in enumerate(row[1]):
                 if element[1] == search_value:
                     matches.append(GridPos(row[0], element[0]))
@@ -61,15 +61,15 @@ class Board:
         """
         Get the width, or number of columns of the board.
         """
-        assert self.board
-        return len(self.board[0])
+        assert self.board_grid
+        return len(self.board_grid[0])
 
     def get_height(self):
         """
         Get the height, or number of rows of the board.
         """
-        assert self.board
-        return len(self.board)
+        assert self.board_grid
+        return len(self.board_grid)
 
     def load_board(self, file_path):
         """
@@ -83,9 +83,9 @@ class Board:
             board_str = file.read()
 
         rows = board_str.split("\n")
-        self.board = []
+        self.board_grid = []
         for row in rows:
-            self.board.append(row.split(" "))
+            self.board_grid.append(row.split(" "))
 
     def write_board(self, board=None, write_path="Boards/temp_board.txt"):
         """

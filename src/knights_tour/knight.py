@@ -35,14 +35,14 @@ Created by: Trevor Clark
 Custom Dependencies:
     board.py
 """
+import copy
 
-from . import board
 from .grid_pos import GridPos
 from .user_interface import UI
 
 
 class Knight:
-    def __init__(self, board_path=None, start_pos=None, target_pos=None):
+    def __init__(self, board, start_pos=None, target_pos=None):
         """
         Initialize the knight on the board.
         Inputs:
@@ -51,8 +51,7 @@ class Knight:
                               Finds 'S' on the board by default.
         """
 
-        self.board_path = board_path
-        self.board = board.Board(self.board_path)
+        self.board = board
         if start_pos is None:
             try:
                 self.start_pos = self.board.find_element("S")[0]
@@ -73,8 +72,8 @@ class Knight:
         if self.knight_pos is None:
             raise Exception("Input Error: No knight start position provided.")
 
-        self.journey_map = board.Board(self.board_path)
-        self.cost_map = board.Board(self.board_path)
+        self.journey_map = copy.deepcopy(board)
+        self.cost_map = copy.deepcopy(board)
 
         self.error_context = "Unexpected error. Context unknown."
 

@@ -17,7 +17,7 @@ class KnightTester(unittest.TestCase):
         """
         Setup the board, and place the knight
         """
-        self.k = Knight("Boards/8x8_board.txt")
+        self.k = Knight(Board("Boards/8x8_board.txt"))
         self.str_board_truth = self.k.board
 
     def test_display_knight__pass(self):
@@ -181,7 +181,7 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = GridPos(11, 26)
         teleport_out = GridPos(23, 27)
-        self.k = Knight("Boards/32x32_board.txt", teleport_in)
+        self.k = Knight(Board("Boards/32x32_board.txt"), teleport_in)
         # print '\n'
         # self.k.display_knight()
         out_pos = self.k.teleport(teleport_in)
@@ -193,7 +193,7 @@ class KnightTester(unittest.TestCase):
         correct exit locations.
         """
         start_pos = GridPos(15, 20)
-        self.k = Knight("Boards/32x32_board.txt", start_pos)
+        self.k = Knight(Board("Boards/32x32_board.txt"), start_pos)
         out_pos = self.k.teleport(start_pos)
         self.assertEqual(out_pos, None)
 
@@ -203,8 +203,8 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = [11, 26]
         # teleport_out = [23, 27]
-        self.k = Knight("Boards/32x32_board.txt", teleport_in)
-        self.k.board.board[15][20] = "T"
+        self.k = Knight(Board("Boards/32x32_board.txt"), teleport_in)
+        self.k.board.board_grid[15][20] = "T"
         with self.assertRaises(Exception):
             self.k.teleport(teleport_in)
 
@@ -246,12 +246,12 @@ class KnightTester(unittest.TestCase):
         """
         A few extra checks, since python list copies tend to do everything by reference.
         """
-        board_template = "Boards/8x8_board.txt"
+        board_path = "Boards/8x8_board.txt"
         start_pos = GridPos(1, 1)
-        self.k = Knight(board_template, start_pos)
+        self.k = Knight(Board(board_path), start_pos)
 
-        self.k.journey_map = Board(board_template)
-        self.k.cost_map = Board(board_template)
+        self.k.journey_map = Board(board_path)
+        self.k.cost_map = Board(board_path)
         self.k.cost_map.reset_board()
         self.k.journey_map.reset_board()
 
@@ -321,7 +321,7 @@ class KnightTester(unittest.TestCase):
     def test_reconstruct_path_32x32(self):
 
         self.k = Knight(
-            "Boards/32x32_board.txt",
+            Board("Boards/32x32_board.txt"),
             start_pos=GridPos(0, 0),
             target_pos=GridPos(31, 31),
         )
@@ -353,7 +353,7 @@ class KnightTester(unittest.TestCase):
         Test that barriers can be detected appropriately.
         """
         self.k = Knight(
-            "Boards/32x32_board.txt",
+            Board("Boards/32x32_board.txt"),
             start_pos=GridPos(0, 0),
             target_pos=GridPos(31, 31),
         )
@@ -381,5 +381,5 @@ class KnightTester(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    k = Knight("Boards/8x8_board.txt")
+    k = Knight(Board("Boards/8x8_board.txt"))
     unittest.main()
