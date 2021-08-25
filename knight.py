@@ -40,6 +40,7 @@ Custom Dependencies:
 import unittest
 import board
 from grid_pos import GridPos
+from display import display
 
 
 class Knight:
@@ -122,23 +123,10 @@ class Knight:
             # self.display_knight(exploratory_node)
             new_nodes = self.explore_moves(exploratory_node)
 
-            # conservative finish condition
-            # if active_list == []:
-            #     # report()
-            #     return
-
             for new_node in new_nodes:
                 active_list.append(new_node)
             # Quick Finish condition (holds true in simple case)
             if active_list == []:
-                # if self.target_pos in new_nodes:
-                # report()
-
-                # print "Journey:"
-                # self.journey_map.display_board()
-                # print "Cost Map:"
-                # self.cost_map.display_board()
-                # print "Minimum Cost:\t%i" % self.cost_map.get_element(self.target_pos)
                 return
 
     def explore_moves(self, curr_node, move_heuristic=None):
@@ -174,19 +162,12 @@ class Knight:
             path_cost = self.cost_map.get_piece(curr_node)
             extended_path_cost = path_cost + move_cost
             last_node_cost = self.cost_map.get_piece(node)
-            if self.cost_map.get_piece(
-                node
-            ) == None or extended_path_cost < self.cost_map.get_piece(node):
-
+            if self.cost_map.get_piece(node) == None or extended_path_cost < self.cost_map.get_piece(node):
                 self.cost_map.set_element(node, extended_path_cost)
-
                 self.journey_map.set_element(node, curr_node)
                 new_nodes.append(node)
 
         return new_nodes
-
-        # else:
-        #     if self.journey_map[node[0]][node[1]] >
 
     def move_heuristic(self):
         """
@@ -283,60 +264,6 @@ class Knight:
 
         return horizontal_first_clear or vertical_first_clear
 
-
-        # # Horizontal first --> then vertical
-        # # S 1 2
-        # # . . 3
-        # x_travel = 0
-        # y_travel = 0
-        # x_first_path = []
-        # for x_travel in range(1, abs(delta.x) + 1):
-        #     x_first_path.append( GridPos(curr_node.x, curr_node.y + x_travel * sign.x) )
-        # for y_travel in range(1, abs(delta.y) + 1):
-        #     # TODO: might be fine, but looks confusing...why x in the y loop?
-        #     x_first_path.append(
-        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
-        #     )
-        #
-        # x_clear = True
-        # for node in x_first_path:
-        #     # print node
-        #     # print self.board.get_element(node)
-        #     if self.board.get_piece(node) == "B":
-        #         x_clear = False
-        # #         print "XPATH FAIL!!!"
-        #
-        #
-        # # Vertical first --> then horizontal
-        # # S . .
-        # # 1 2 3
-        # x_travel = 0
-        # y_travel = 0
-        # y_first_path = []
-        # for y_travel in range(1, abs(delta.y) + 1):
-        #     y_first_path.append(
-        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
-        #     )
-        # for x_travel in range(1, abs(delta.x) + 1):
-        #     y_first_path.append(
-        #         GridPos( curr_node.x + y_travel * sign.y, curr_node.y + x_travel * sign.x)
-        #     )
-        #
-        # y_clear = True
-        # for node in y_first_path:
-        #     # print node
-        #     # print repr(self.board.get_element(node))
-        #     if self.board.get_piece(node) == "B":
-        #         y_clear = False
-        #         # print "PATH FAIL!!!"
-        #
-        # if aggressive == True:
-        #     # Absolutely no obstructions! Both must be clear
-        #     return x_clear and y_clear
-        # else:
-        #     # or either path is open, we're clear
-        #     return x_clear or y_clear
-
     def get_possible_nodes(self, curr_node):
         delta_moves = [
             GridPos(-2, -1),
@@ -353,8 +280,6 @@ class Knight:
         # TODO: looks like it's being initialized outside the loop...don't think that's needed though
         new_node = GridPos(-1,-1) # initialize to invalid value
         for move in delta_moves:
-            # for i in range(len(curr_node)):  # loop over [y,x]
-            #     new_node[i] = curr_node[i] + move[i]
             new_node = curr_node + move
             if self.validate_within_bounds(new_node) and self.validate_barrier_clear(curr_node, new_node):
                 new_nodes.append(new_node)
@@ -421,7 +346,7 @@ class Knight:
         if pos is None:
             pos = self.knight_pos
         pieces = {display_character: pos}
-        self.board.display_board(pieces=pieces)
+        display.display_board(self.board.get_board(), pieces=pieces)
 
     def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
@@ -556,10 +481,9 @@ class KnightTester(unittest.TestCase):
             valid = self.k.validate_pos_sequence(positions, rich_print=True)
         finally:
             sys.stdout = default_output
-        # print self.k.error_context
+
         self.assertTrue(valid)
-        # print print_buffer.getvalue()
-        # It's not elegant, but it's the most direct
+
         expected_output = (
             "\nK . . . . . . .\n"
             ". . . . . . . .\n"
@@ -675,8 +599,6 @@ class KnightTester(unittest.TestCase):
         correct exit locations.
         """
         start_pos = GridPos(15, 20)
-        # teleport_in = [11,26]
-        # teleport_out = [23,27]
         self.k = Knight("Boards/32x32_board.txt", start_pos)
         out_pos = self.k.teleport(start_pos)
         self.assertEqual(out_pos, None)
@@ -690,7 +612,7 @@ class KnightTester(unittest.TestCase):
         self.k = Knight("Boards/32x32_board.txt", teleport_in)
         self.k.board._board[15][20] = "T"
         with self.assertRaises(Exception):
-            out_pos = self.k.teleport(teleport_in)
+            self.k.teleport(teleport_in)
 
     def test_validate_within_bounds(self):
         self.assertTrue(self.k.validate_within_bounds(GridPos(0, 0)))
@@ -709,6 +631,7 @@ class KnightTester(unittest.TestCase):
                                 GridPos(3, 0),
                                 GridPos(2, 3),
                                 GridPos(3, 2)]
+
         # These 4 nodes are expected, though order is not gauranteed
         for node in nodes:
             self.assertTrue(node in expected_valid_nodes)
@@ -755,7 +678,7 @@ class KnightTester(unittest.TestCase):
         for node in nodes:
             self.assertFalse(node in expected_omitted_node)
 
-        ###make sure the cost_map updates
+        # make sure the cost_map updates
         expected_cost_map = [
             [None, None, None, 1, None, None, None, None],
             [None, 0, None, None, None, None, None, None],
@@ -784,7 +707,6 @@ class KnightTester(unittest.TestCase):
 
     # TODO: figure out what this really tests
     def test_plan_path(self):
-        """ """
         self.k.plan_path()
 
     # TODO: figure out what this really tests
@@ -793,9 +715,7 @@ class KnightTester(unittest.TestCase):
         # print "*"*40
         path = self.k.reconstruct_path()
         for step in path:
-            # print self.k.cost_map.get_element(step)
             my_str = "Cost: %i \t" % self.k.cost_map.get_piece(step)
-            # print my_str + "Node: " + str(step)
 
     def test_reconstruct_path_32x32(self):
 
@@ -820,8 +740,8 @@ class KnightTester(unittest.TestCase):
 
         print(print_str)
         # self.k.cost_map.display_board(pieces = journey)
-        self.k.board.display_board(pieces=journey)
-        self.k.board.display_board(pieces=journey_cost)
+        display.display_board(self.k.board.get_board(), pieces=journey)
+        display.display_board(self.k.board.get_board(), pieces=journey_cost)
 
     def test_validate_barrier_clear__pass(self):
         """
@@ -866,5 +786,3 @@ class KnightTester(unittest.TestCase):
 if __name__ == "__main__":
     k = Knight("Boards/8x8_board.txt")
     unittest.main()
-    # k.display_knight()
-    # k.create_cost_board(k.board)

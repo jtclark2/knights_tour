@@ -1,7 +1,5 @@
 TODO: Future Improvements:
     - Create Enums for all the special objects (currently uses characters)
     - Split testing into separate file(s)
-    - Use numpy (why did I use nested lists to begin with?)
-    - Decouple board display from internal representation
     - Clarify entry point: Make the solutions to the original pdf explicit and easy to find (they're kind of buried in testing right now)
     - Add test coverage (pytest-cov)

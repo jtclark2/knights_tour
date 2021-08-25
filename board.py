@@ -14,30 +14,6 @@ class Board:
         else:
             self.load_board(board_path)
 
-    def _board_as_str(self, board=None):
-        """
-        Purpose: Take the 2D board and turn it into a str
-        Inputs: board
-        Outputs: str representation of board (matches file and convenient display)
-
-        Note: While board is intrinsic to this class, the str repr is not. It
-            may require alteration to show pieces overlaid on the board, so we
-            allow board as an explicit input arg, with self.board as the
-            default.
-        """
-        if board is None:
-            assert self._board is not None
-            board = [row for row in self._board]
-
-        board_str = ""
-        for row in board:
-            for element in row:
-                board_str = board_str + ("%s " % element)
-            board_str = board_str[:-1]  # remove trailing ' '
-            board_str = board_str + "\n"
-        board_str = board_str[:-1]  # remove trailing '\n'
-        return board_str
-
     def reset_board(self, value=None):
         for i in range(self.get_width()):
             for j in range(self.get_height()):
@@ -87,8 +63,7 @@ class Board:
 
     def load_board(self, file_path):
         """
-        Reads the board from a text file, parsing and loading memory as a list of lists
-        to represent the 2D configuration.
+        Reads the board from a text file, parsing and loading into memory
         TODO: should probably just use 2D numpy array
         File Format: ' ' delimits elements in a row, and '\n' delimits between rows
         Assumptions/Limitations: Does not handle/pad non-rectangular boards.
@@ -116,29 +91,32 @@ class Board:
         """
 
         # construct string for file write
-        board_str = self._board_as_str(board)
+        # TODO: Consider implementing as __repr__
+        board_str = self.board_to_str(board)
 
         with open(write_path, "w", encoding="utf-8") as file:
             file.write(board_str)
 
-    def display_board(self, board=None, pieces=None):
+    @staticmethod
+    def board_to_str(board):
         """
-        Prints a repr of the board to the screen.
+        Purpose: Take the 2D board and turn it into a str
+        Inputs: board
+        Outputs: str representation of board (matches file and convenient display)
 
-        Inputs:
-            board: python list of lists, where element = board[row][col].
-            pieces: Optional
-                Dictionary, with display char as key, and elementDisplay pieces
-                on the board, over the underlying space.
+        Note: While board is intrinsic to this class, the str repr is not. It
+            may require alteration to show pieces overlaid on the board, so we
+            allow board as an explicit input arg, with self.board as the
+            default.
         """
-        # Clean copy, so python doesn't pass the reference
-        board_copy = [row[:] for row in self._board]
-        if pieces is not None:
-            for piece in pieces:
-                board_copy[pieces[piece].x][pieces[piece].y] = piece
-
-        print("\n" + self._board_as_str(board_copy))
-
+        board_str = ""
+        for row in board:
+            for element in row:
+                board_str = board_str + ("%s " % element)
+            board_str = board_str[:-1]  # remove trailing ' '
+            board_str = board_str + "\n"
+        board_str = board_str[:-1]  # remove trailing '\n'
+        return board_str
 
 class BoardTester(unittest.TestCase):
     def setUp(self):
@@ -249,54 +227,6 @@ class BoardTester(unittest.TestCase):
 
         self.assertEqual(raw_board_ground_truth, raw_board_written)
 
-    def test_display_board__pass(self):
-        """
-        Purpose: Verify that base case of board display works
-        """
-        import sys
-        from io import StringIO
-
-        print_buffer = StringIO()
-        self.B._board = self.board_ground_truth
-
-        default_output = sys.stdout
-        try:
-            sys.stdout = print_buffer
-            self.B.display_board(self.board_ground_truth)
-        finally:
-            sys.stdout = default_output
-
-        # Print automatically appends '\n', which is perfect for our usage
-        self.assertEqual(
-            print_buffer.getvalue(), "\n" + self.str_board_ground_truth + "\n"
-        )
-
-    def test_display_board__input_pieces(self):
-        """
-        Purpose: Verify board display works when passing in chars.
-        """
-        import sys
-        from io import StringIO
-
-        print_buffer = StringIO()
-        self.B._board = self.board_ground_truth
-        str_board = "A" + self.str_board_ground_truth[1:]
-        str_board = str_board[:34] + "K" + str_board[34 + 1 :]
-        pieces = {"A": GridPos(0, 0), "K": GridPos(2, 1)}
-
-        default_output = sys.stdout
-        try:
-            sys.stdout = print_buffer
-            self.B.display_board(self.board_ground_truth, pieces)
-        finally:
-            sys.stdout = default_output
-
-        # print print_buffer.getvalue()
-        # print "Truth:"
-        # print str_board + '\n'
-        # Print automatically appends '\n', which is perfect for our usage
-        self.assertEqual(print_buffer.getvalue(), "\n" + str_board + "\n")
-
     def test_find_element__pass_single_element(self):
         self.B._board = self.board_ground_truth
         pos = self.B.find_element("S")[0]
@@ -330,18 +260,6 @@ class BoardTester(unittest.TestCase):
         self.B._board = self.board_ground_truth
         self.B.set_element(pos, value)
         self.assertEqual(self.board_ground_truth, self.B._board)
-
-    @unittest.skip("Just Experimenting.")
-    def test_print_intercept(self):
-        import sys
-        from io import StringIO
-
-        print_buffer = StringIO.StringIO()
-        sys.stdout = print_buffer
-        print("intercepted?")
-        sys.stdout = sys.__stdout__
-        print(print_buffer.getvalue())
-
 
 if __name__ == "__main__":
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(BoardTester)
