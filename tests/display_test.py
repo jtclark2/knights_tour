@@ -46,7 +46,7 @@ class BoardTester(unittest.TestCase):
         """
 
         print_buffer = StringIO()
-        self.B.board_grid = self.board_ground_truth
+        self.B._board_grid = self.board_ground_truth
 
         default_output = sys.stdout
         try:
@@ -66,7 +66,7 @@ class BoardTester(unittest.TestCase):
         """
 
         print_buffer = StringIO()
-        self.B.board_grid = self.board_ground_truth
+        self.B._board_grid = self.board_ground_truth
         str_board = "A" + self.str_board_ground_truth[1:]
         str_board = str_board[:34] + "K" + str_board[34 + 1 :]
         pieces = {"A": GridPos(0, 0), "K": GridPos(2, 1)}

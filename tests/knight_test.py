@@ -204,7 +204,7 @@ class KnightTester(unittest.TestCase):
         teleport_in = [11, 26]
         # teleport_out = [23, 27]
         self.k = Knight(Board("Boards/32x32_board.txt"), teleport_in)
-        self.k.board.board_grid[15][20] = "T"
+        self.k.board._board_grid[15][20] = "T"
         with self.assertRaises(Exception):
             self.k.teleport(teleport_in)
 
@@ -220,7 +220,7 @@ class KnightTester(unittest.TestCase):
         Verify that the correct nodes are returned.
         """
         curr_node = GridPos(1, 1)
-        nodes = self.k.get_possible_nodes(curr_node)
+        nodes = self.k.get_possible_moves(curr_node)
         expected_valid_nodes = [
             GridPos(0, 3),
             GridPos(3, 0),
@@ -292,7 +292,7 @@ class KnightTester(unittest.TestCase):
             [None, None, None, None, None, None, None, None],
         ]
 
-        self.assertEqual(self.k.cost_map.get_board(), expected_cost_map)
+        self.assertEqual(self.k.cost_map.grid, expected_cost_map)
 
         expected_journey_map = [
             [None, None, None, GridPos(1, 1), None, None, None, None],
@@ -305,7 +305,7 @@ class KnightTester(unittest.TestCase):
             [None, None, None, None, None, None, None, None],
         ]
 
-        self.assertEqual(self.k.journey_map.get_board(), expected_journey_map)
+        self.assertEqual(self.k.journey_map.grid, expected_journey_map)
 
     # TODO: figure out what this really tests
     def test_plan_path(self):
@@ -325,7 +325,7 @@ class KnightTester(unittest.TestCase):
             start_pos=GridPos(0, 0),
             target_pos=GridPos(31, 31),
         )
-        self.k.board.get_board()[5][8] = "."
+        self.k.board.set_element(GridPos(5,8), ".")
         self.k.plan_path()
 
         # Show Journey
@@ -345,8 +345,8 @@ class KnightTester(unittest.TestCase):
 
         print(print_str)
         # self.k.cost_map.display_board(pieces = journey)
-        UI.display_board(self.k.board.get_board(), pieces=journey)
-        UI.display_board(self.k.board.get_board(), pieces=journey_cost)
+        self.k.board.display_board(pieces=journey)
+        self.k.board.display_board(pieces=journey_cost)
 
     def test_validate_barrier_clear__pass(self):
         """

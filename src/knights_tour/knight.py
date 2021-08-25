@@ -38,8 +38,6 @@ Custom Dependencies:
 import copy
 
 from .grid_pos import GridPos
-from .user_interface import UI
-
 
 class Knight:
     def __init__(self, board, start_pos=None, target_pos=None):
@@ -134,11 +132,6 @@ class Knight:
 
         Inputs:
             curr_pos = (y,x), node we're exploring from
-            move_heuristic: nothing yet, may help in the next step
-                Function which determines which moves make sense.
-                1) In the simplest case, knight moves on the board
-                2) Could also limit to unexplored space
-                3) Could limit to only low cost heuristics
         Outputs:
             positions: list of new position nodes for continued exploration.
 
@@ -147,16 +140,12 @@ class Knight:
             node that it came from. This tracking data will allow us to reverse
             engineer the path after finding the minimal cost route.
         """
-
-        # find all desirable nodes to move to
         new_nodes = []
-        for node in self.get_possible_nodes(curr_node):
+        for node in self.get_possible_moves(curr_node):
             try:
                 move_cost = self.get_cost(self.board.get_piece(node))
             except:
                 print(node)
-                print(len(self.board.get_board()))
-                print(len(self.board.get_board()[0]))
                 raise
             path_cost = self.cost_map.get_piece(curr_node)
             extended_path_cost = path_cost + move_cost
@@ -260,7 +249,7 @@ class Knight:
 
         return horizontal_first_clear or vertical_first_clear
 
-    def get_possible_nodes(self, curr_node):
+    def get_possible_moves(self, curr_pos):
         delta_moves = [
             GridPos(-2, -1),
             GridPos(-2, 1),
@@ -272,23 +261,23 @@ class Knight:
             GridPos(2, 1),
         ]
 
-        new_nodes = []
+        new_positions = []
         # TODO: looks like it's being initialized outside the loop...don't think that's needed though
         new_node = GridPos(-1, -1)  # initialize to invalid value
         for move in delta_moves:
-            new_node = curr_node + move
+            new_node = curr_pos + move
             if self.validate_within_bounds(new_node) and self.validate_barrier_clear(
-                curr_node, new_node
+                curr_pos, new_node
             ):
-                new_nodes.append(new_node)
+                new_positions.append(new_node)
 
         # TODO: Filter for going over barriers
 
-        teleport = self.teleport(curr_node)
-        if self.teleport(curr_node) is not None:
-            new_nodes.append(teleport)
+        teleport = self.teleport(curr_pos)
+        if self.teleport(curr_pos) is not None:
+            new_positions.append(teleport)
 
-        return new_nodes
+        return new_positions
 
     def get_cost(self, value):
         """
@@ -338,7 +327,7 @@ class Knight:
         if pos is None:
             pos = self.knight_pos
         pieces = {display_character: pos}
-        UI.display_board(self.board.get_board(), pieces=pieces)
+        self.board.display_board(pieces=pieces)
 
     def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
