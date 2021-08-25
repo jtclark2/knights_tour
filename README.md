@@ -1,3 +1,6 @@
+# Status
+[![Python application](https://github.com/jtclark2/knights_tour/actions/workflows/python-app.yml/badge.svg)](https://github.com/jtclark2/knights_tour/actions/workflows/python-app.yml)
+
 # KnightBoard Problem Statement
 This repo addressing a series of increasingly complex maze/pathfinding problems, which can be 
 treated as heuristic searches.
