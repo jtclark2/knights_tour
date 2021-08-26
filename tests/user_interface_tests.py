@@ -4,7 +4,7 @@ from io import StringIO
 import unittest
 
 # Resources
-from src.knights_tour.board import Board
+from src.knights_tour.gamemechanics import GameMechanics
 from src.knights_tour.grid_pos import GridPos
 
 # Test target
@@ -17,7 +17,7 @@ class BoardTester(unittest.TestCase):
         """
         Init board for each test.
         """
-        self.B = Board()
+        self.B = GameMechanics()
         self.board_ground_truth = [
             [".", ".", ".", ".", ".", ".", ".", "."],
             [".", ".", ".", ".", ".", ".", ".", "."],

@@ -5,7 +5,7 @@ import os
 from src.knights_tour.grid_pos import GridPos
 
 # test target
-from src.knights_tour.board import Board
+from src.knights_tour.gamemechanics import GameMechanics
 
 
 class BoardTester(unittest.TestCase):
@@ -13,7 +13,7 @@ class BoardTester(unittest.TestCase):
         """
         Init board for each test.
         """
-        self.B = Board()
+        self.B = GameMechanics()
         self.board_ground_truth = [
             [".", ".", ".", ".", ".", ".", ".", "."],
             [".", ".", ".", ".", ".", ".", ".", "."],
@@ -96,30 +96,6 @@ class BoardTester(unittest.TestCase):
         self.B.load_board("Boards/8x8_board.txt")
         self.assertEqual(len(self.B._board_grid), 8)  # column count
         self.assertEqual(len(self.B._board_grid[0]), 8)  # row count
-
-    def test_write_board__pass(self):
-        """
-        Purpose: Verify that data structure is written correctly.
-                 Correctly is defined as a grid, with elements in a row separated
-                 by ' ', and rows separated by '\n'
-        Assumptions: read_board() is also operating correctly.
-                     Technically bad practice for a 'unit' test, but
-                     low risk and pragmatic in this simple case.
-        """
-
-        try:
-            temp_file_path = "Boards/temp_board.txt"
-            self.B.write_board(self.board_ground_truth, temp_file_path)
-
-            # Read test data
-            with open("Boards/8x8_board.txt", "r", encoding="utf-8") as file:
-                raw_board_ground_truth = file.read()
-            with open(temp_file_path, "r", encoding="utf-8") as file:
-                raw_board_written = file.read()
-
-            self.assertEqual(raw_board_ground_truth, raw_board_written)
-        finally:
-            os.remove(temp_file_path)
 
     def test_find_element__pass_single_element(self):
         self.B._board_grid = self.board_ground_truth
