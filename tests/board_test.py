@@ -38,7 +38,7 @@ class BoardTester(unittest.TestCase):
 
     def test_get_element_pass(self):
         self.B._board_grid = self.board_ground_truth
-        element = self.B.get_piece(GridPos(2, 1))
+        element = self.B.get_value(GridPos(2, 1))
         self.assertEqual(element, "S")
 
     @unittest.skip(
@@ -123,12 +123,12 @@ class BoardTester(unittest.TestCase):
 
     def test_find_element__pass_single_element(self):
         self.B._board_grid = self.board_ground_truth
-        pos = self.B.find_element("S")[0]
+        pos = self.B.find_all_elements("S")[0]
         self.assertEqual(pos, GridPos(2, 1))
 
     def test_find_element__element_DNE(self):
         self.B._board_grid = self.board_ground_truth
-        pos = self.B.find_element(5)
+        pos = self.B.find_all_elements(5)
         self.assertEqual(pos, [])
 
     def test_reset_board(self):

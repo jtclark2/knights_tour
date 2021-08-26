@@ -55,7 +55,7 @@ class Board:
         #TODO: make sense when board was a property for backing var _board...not sure now
         return self._board_grid
 
-    def get_piece(self, pos):
+    def get_value(self, pos):
         """
         Retrieve an element by index.
         Input: Index pos
@@ -66,7 +66,7 @@ class Board:
     def set_element(self, pos, value):
         self._board_grid[pos.x][pos.y] = value
 
-    def find_element(self, search_value):
+    def find_all_elements(self, search_value):
         """
         Finds all locations of a specific element on the board.
         Inputs: The element value to search for.

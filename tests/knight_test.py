@@ -332,7 +332,7 @@ class KnightTester(unittest.TestCase):
         path = self.k.reconstruct_path()
         print_str = ""
         for step in path:
-            my_str = "Cost: %i \t" % self.k.cost_map.get_piece(step)
+            my_str = "Cost: %i \t" % self.k.cost_map.get_value(step)
             print_str = print_str + my_str + "Node: " + str(step)
 
         journey = {}
@@ -341,7 +341,7 @@ class KnightTester(unittest.TestCase):
             step_num = step[0]
             step_node = step[1]
             journey[step_num] = step_node
-            journey_cost[self.k.cost_map.get_piece(step_node)] = step_node
+            journey_cost[self.k.cost_map.get_value(step_node)] = step_node
 
         print(print_str)
         # self.k.cost_map.display_board(pieces = journey)

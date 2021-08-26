@@ -40,6 +40,7 @@ import copy
 from .grid_pos import GridPos
 
 class Knight:
+    # ***
     def __init__(self, board, start_pos=None, target_pos=None):
         """
         Initialize the knight on the board.
@@ -52,7 +53,7 @@ class Knight:
         self.board = board
         if start_pos is None:
             try:
-                self.start_pos = self.board.find_element("S")[0]
+                self.start_pos = self.board.find_all_elements("S")[0]
             except IndexError:
                 self.start_pos = None
         else:
@@ -61,7 +62,7 @@ class Knight:
 
         if target_pos is None:
             try:
-                self.target_pos = self.board.find_element("E")[0]  # assuming only 1
+                self.target_pos = self.board.find_all_elements("E")[0]  # assuming only 1
             except IndexError:
                 self.target_pos = None
         else:
@@ -75,13 +76,23 @@ class Knight:
 
         self.error_context = "Unexpected error. Context unknown."
 
+    # ***
     def reconstruct_path(self):
+        """
+        Builds a path from starting point to target.
+
+        Assumptions:
+            self.journey_map has already been populated correctly (via plan_path)
+
+        return: List of positions the knight travels through on it's path
+
+        """
         optimal_path = []
         current_node = self.target_pos
         while True:
             optimal_path.append(current_node)
-            current_node = self.journey_map.get_piece(current_node)
-            if current_node is None:
+            current_node = self.journey_map.get_value(current_node)
+            if current_node is None:  # start_pos has value None
                 break
 
         return list(reversed(optimal_path))
@@ -91,16 +102,10 @@ class Knight:
         Plans a path for the knight to take. Optimizes according to cost function
         defined by self.get_cost().
 
-        Inputs:
-            None
-
-        Outputs:
-            None
-
         Side-Effects:
-            self.cost_map: a board whose values represent the lowest discovered cost
-                of achieving that position.
-            self.journey_map: A map of reference coordinates to the last point. This
+            Populates self.cost_map: a board that represents the lowest discovered cost
+                for all positions.
+            self.journey_map: A board in which each value is a reference to the previous position. This
                 can be used to reconstruct the optimal path.
         """
         active_list = [self.knight_pos]  # Init list with a start pos
@@ -126,47 +131,57 @@ class Knight:
             if active_list == []:
                 return
 
-    def explore_moves(self, curr_node):
+    # ***
+    def explore_moves(self, curr_pos):
         """
-        Explores the map by making each available rational move.
+        Consider all valid moves from a given position. Each move would land in a new position, with a specific total
+        cost (cost to reach curr_pos + move_cost). If the new cost is better/lower than the previously recorded value
+        at that location on self.cost_map, then the cost map value is replaced, and the corresponding journey_map is
+        updated so that the new position references curr_pos, since that is the path it took to get here.
 
         Inputs:
-            curr_pos = (y,x), node we're exploring from
-        Outputs:
-            positions: list of new position nodes for continued exploration.
+            curr_pos: current position, from which all available moves are explored
+
+        return:
+            positions: List of good moves
 
         Side-Effects:
-            self.path_map = Board() in which each value is a pos pointing to
-            node that it came from. This tracking data will allow us to reverse
-            engineer the path after finding the minimal cost route.
+            For each new target position in good_moves:
+                - self.cost_map is updated with the NEW lowest cost
+                - self.journey_map is updated with the current_position (where it moved from)
         """
-        new_nodes = []
-        for node in self.get_possible_moves(curr_node):
+        better_moves = [] # moves that are better (lower cost than previously encountered)
+        for new_pos in self.get_possible_moves(curr_pos):
             try:
-                move_cost = self.get_cost(self.board.get_piece(node))
+                move_cost = self.get_cost(self.board.get_value(new_pos))
             except:
-                print(node)
+                print(new_pos)
                 raise
-            path_cost = self.cost_map.get_piece(curr_node)
-            extended_path_cost = path_cost + move_cost
+            path_cost = self.cost_map.get_value(curr_pos)
+            total_cost = path_cost + move_cost
 
-            if self.cost_map.get_piece(
-                node
-            ) == None or extended_path_cost < self.cost_map.get_piece(node):
-                self.cost_map.set_element(node, extended_path_cost)
-                self.journey_map.set_element(node, curr_node)
-                new_nodes.append(node)
+            # Save lowest cost
+            if self.cost_map.get_value(new_pos) is None or total_cost < self.cost_map.get_value(new_pos):
+                self.cost_map.set_element(new_pos, total_cost)
+                self.journey_map.set_element(new_pos, curr_pos)
+                better_moves.append(new_pos)
 
-        return new_nodes
+        return better_moves
 
     def move_heuristic(self):
         """
         Provide heuristic of distance remaining.
+        This could help find more effective routes, by biasing the search.
         """
         raise NotImplementedError
 
+    # ***
     @staticmethod
     def validate_L_move(delta):
+        """
+        Return whether a move is valid for a knight. Does it move 2 spaces in one direction, and 1 in the other.
+        Does NOT check boundaries or Barriers.
+        """
         if (abs(delta.x) == 2 and abs(delta.y) == 1) or (
             abs(delta.x) == 1 and abs(delta.y) == 2
         ):
@@ -174,21 +189,28 @@ class Knight:
         else:
             return False
 
-    def validate_within_bounds(self, node):
+    # ***
+    def validate_within_bounds(self, target_pos):
         """
-        Check if a particular position is in bound.
-        Input: node = [y,x]
+        Check if a particular position is in bounds. Barriers are considered out-of-bounds.
+        Input: Target position
         Output: True if in bounds, False if outside
         """
-        y_on_board = (node.x >= 0) and (node.x < self.board.get_height())
-        x_on_board = (node.y >= 0) and (node.y < self.board.get_width())
+        y_on_board = (target_pos.x >= 0) and (target_pos.x < self.board.get_height())
+        x_on_board = (target_pos.y >= 0) and (target_pos.y < self.board.get_width())
+
+
         if x_on_board and y_on_board:
-            return True
+            if self.board.get_value(target_pos) == "B":
+                return False
+            else:
+                return True
         else:
             self.error_context = "Moves are not contained on the board"
             return False
 
-    def is_horizontal_motion_clear_of_barriers(self, start_x, stop_x, y, sign):
+    # TODO
+    def _is_horizontal_motion_clear_of_barriers(self, start_x, stop_x, y, sign):
         """
         Checks if jogging horizontal will collide with barrier.
         """
@@ -196,12 +218,13 @@ class Knight:
         horizontal_path_clear = True
         while travel_pos.x != stop_x:  # take 1 or 2 steps (depending on the move)
             travel_pos += GridPos(sign, 0)  # take one step in horizontal direction
-            if self.board.get_piece(travel_pos) == "B":
+            if self.board.get_value(travel_pos) == "B":
                 horizontal_path_clear = False
 
         return horizontal_path_clear
 
-    def is_vertical_motion_clear_of_barriers(self, start_y, stop_y, x, sign):
+    # TODO
+    def _is_vertical_motion_clear_of_barriers(self, start_y, stop_y, x, sign):
         """
         Checks if jogging vertical will collide with barrier
         """
@@ -209,14 +232,22 @@ class Knight:
         vertical_path_clear = True
         while travel_pos.y != stop_y:  # take 1 or 2 steps (depending on the move)
             travel_pos += GridPos(0, sign)  # take one step in horizontal direction
-            if self.board.get_piece(travel_pos) == "B":
+            if self.board.get_value(travel_pos) == "B":
                 vertical_path_clear = False
 
         return vertical_path_clear
 
+    # TODO: rewrite to add the 3rd case...not sure if I delete what's there, or build on it
     def validate_barrier_clear(self, curr_node, next_node):
         """
-        Check if a particular falls within bound.
+        Check if a knight's movement will collide with a barrier.
+        The knight's movement only defines an endpoint, not a path. This method recognizes 3 different paths are
+        possible. Consider the 2 move direction to be "long", and the 1 move driection to be "short".
+        There are 8 possible moves a knight can make, but they are all symmetrical. For each move, there are 3
+        theoretical routes that could be taken, each taking 3 steps:
+            - long, long, short
+            - long, short long
+            - short, long, long
         Input: node = [y,x]
         Output:
             True if path is clear of barriers
@@ -229,27 +260,34 @@ class Knight:
 
         sign = delta // abs(delta)
 
+        # long, long, short
+
         # Horizontal first --> then vertical
         # S 1 2
         # . . 3
-        horizontal_first_clear = self.is_horizontal_motion_clear_of_barriers(
+        horizontal_first_clear = self._is_horizontal_motion_clear_of_barriers(
             start_x=curr_node.x, stop_x=next_node.x, y=curr_node.y, sign=sign.x
-        ) and self.is_vertical_motion_clear_of_barriers(
+        ) and self._is_vertical_motion_clear_of_barriers(
             start_y=curr_node.y, stop_y=next_node.y, x=next_node.x, sign=sign.y
         )
 
         # Vertical first --> then horizontal
         # S . .
         # 1 2 3
-        vertical_first_clear = self.is_vertical_motion_clear_of_barriers(
+        vertical_first_clear = self._is_vertical_motion_clear_of_barriers(
             start_y=curr_node.y, stop_y=next_node.y, x=curr_node.x, sign=sign.y
-        ) and self.is_horizontal_motion_clear_of_barriers(
+        ) and self._is_horizontal_motion_clear_of_barriers(
             start_x=curr_node.x, stop_x=next_node.x, y=next_node.y, sign=sign.x
         )
 
         return horizontal_first_clear or vertical_first_clear
 
+    # ***
     def get_possible_moves(self, curr_pos):
+        """
+        From any position, return a list of all valid moves. That includes any knight's move that would stay on the
+        board, and any teleports.
+        """
         delta_moves = [
             GridPos(-2, -1),
             GridPos(-2, 1),
@@ -262,16 +300,11 @@ class Knight:
         ]
 
         new_positions = []
-        # TODO: looks like it's being initialized outside the loop...don't think that's needed though
-        new_node = GridPos(-1, -1)  # initialize to invalid value
         for move in delta_moves:
-            new_node = curr_pos + move
-            if self.validate_within_bounds(new_node) and self.validate_barrier_clear(
-                curr_pos, new_node
-            ):
-                new_positions.append(new_node)
-
-        # TODO: Filter for going over barriers
+            new_pos = curr_pos + move
+            if self.validate_within_bounds(new_pos) and \
+               self.validate_barrier_clear(curr_pos, new_pos):
+                new_positions.append(new_pos)
 
         teleport = self.teleport(curr_pos)
         if self.teleport(curr_pos) is not None:
@@ -281,7 +314,7 @@ class Knight:
 
     def get_cost(self, value):
         """
-        Return cost for a move to a specific destination.
+        Return cost for landing on a specific location (ie: the cost of the move).
         """
         value_lookup = {
             "B": 100000,
@@ -292,32 +325,35 @@ class Knight:
             "L": 5,
             "S": 0,  # mute point, since costs acrue upon landing
             "E": 1,
-        }  # Assuming 'E' is still '.' underneath
+        }  # We assume 'E' is still '.' underneath
         return value_lookup[value]
 
+    # ***
     def teleport(self, curr_pos):
         """
         Returns the coupled teleport position.
-        Assumes there are only 2 teleport positions.
-        Input: None, assumes board is populated already.
+        Assumptions:
+            There are only 2 teleport positions (for more, we'd need to start adding IDs)
+        Input: None
         Output: The location [y,x] of the exit teleport.
         """
-        tele = self.board.find_element("T")
 
-        if curr_pos not in tele:
-            return None  # No teleportation avaiable from here
+        # No teleportation available from here
+        if self.board.get_value(curr_pos) != "T":
+            return None
+
+        teleports = self.board.find_all_elements("T")
 
         # TODO - this check should be upon board init - better to find out sooner
-        if len(tele) != 2:
-            raise Exception(
-                "Incorrect number of teleporters discovered. Expected 2, found %i"
-                % len(tele)
-            )
+        if len(teleports) != 2:
+            print("Board does not have 2 teleports. Don't know where it leads, and I was always told not to venture through mystery portals.")
+            return None
 
-        if tele[0] == curr_pos:
-            return tele[1]
-        if tele[1] == curr_pos:
-            return tele[0]
+        # If there are 2, they connect, so just return the other
+        if teleports[0] == curr_pos:
+            return teleports[1]
+        if teleports[1] == curr_pos:
+            return teleports[0]
 
     def display_knight(self, pos=None):
         """
@@ -331,17 +367,15 @@ class Knight:
 
     def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
-        Note: Problem 1 from the prompt
+        Note: Addresses prompt: problem 1
 
         Purpose:
             Validates that a sequence of moves is valid for the knight to make:
                 - 2 spaces in a direction(x,y), 1 space in the other direction.
                 - Remains in bounds
 
-
         Assumptions:
-            Board exists: checked explicitly.
-            Board is rectangular: assumed as property of a board.
+            Board has been defined: checked explicitly.
 
         Inputs:
             move_sequence: A list of absolute positions, representing the target position after each move
@@ -356,29 +390,32 @@ class Knight:
                 "Error: No board loaded. Load a board before moving your pieces."
             )
 
-        first_iteration = True
-        for pos in pos_sequence:
+        # print starting state
+        if rich_print:
+            self.display_knight(pos_sequence[0])
+
+        pos_prev = pos_sequence[0]
+
+        for pos in pos_sequence[1:]:
             if not self.validate_within_bounds(pos):
                 return False
 
             # First iteration, we have no previous pos to compare against
-            if first_iteration:
-                first_iteration = False
-            else:
-                delta = pos_prev - pos
+            delta = pos_prev - pos
 
-                if self.validate_L_move(delta):
-                    pass
-                else:
-                    self.error_context = (
-                        "2 adjascent positions represent a move that a"
-                        "knight is not permitted to make."
-                        "Last valid position:" + str(pos_prev)
-                    )
-                    return False
+            if self.validate_L_move(delta):
+                pass
+            else:
+                self.error_context = (
+                    "2 adjascent positions represent a move that a"
+                    "knight is not permitted to make."
+                    "Last valid position:" + str(pos_prev)
+                )
+                return False
 
             if rich_print:
                 self.display_knight(pos)
+
             pos_prev = pos
 
         return True
