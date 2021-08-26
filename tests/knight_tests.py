@@ -42,7 +42,7 @@ class KnightTester(unittest.TestCase):
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            self.k.display_knight()
+            self.k.display_current_map()
         finally:
             sys.stdout = default_output
 
@@ -325,26 +325,25 @@ class KnightTester(unittest.TestCase):
             start_pos=GridPos(0, 0),
             target_pos=GridPos(31, 31),
         )
-        self.k.board.set_element(GridPos(5,8), ".")
+
+        # show the teleport feature
+        # self.k.board.set_element(GridPos(5,8), ".")
         self.k.plan_path()
 
-        # Show Journey
         path = self.k.reconstruct_path()
-        print_str = ""
-        for step in path:
-            my_str = "Cost: %i \t" % self.k.cost_map.get_value(step)
-            print_str = print_str + my_str + "Node: " + str(step) + " -->\n"
+        self.k.display_path_as_list(path)
 
         journey = {}
         journey_cost = {}
-        for step in enumerate(path):
-            step_num = step[0]
-            step_node = step[1]
+        for step_num, step_node in enumerate(path):
             journey[step_num] = step_node
             journey_cost[self.k.cost_map.get_value(step_node)] = step_node
 
-        print(print_str)
-        # self.k.cost_map.display_board(pieces = journey)
+        print("Cost:/n")
+        self.k.cost_map.display_board(pieces = journey)
+        print("Journey:/n")
+        self.k.journey_map.display_board(pieces = {f"█{val}█":pos for val,pos in journey.items()}, value_width=5)
+
         self.k.board.display_board(pieces=journey)
         self.k.board.display_board(pieces=journey_cost)
 

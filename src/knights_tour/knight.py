@@ -5,25 +5,7 @@ Assumptions:
     b) The 32x32 board starts are passed in, since 'S' and 'E' were not
        pre-populated. 
 
-Level 1: Call Knight().validate_pos_sequence(node_sequence, rich_print)
-    Note that while this method fulfills the objective, a generator proved
-    more useful than a validator throughout the problem.
-Level 2: Call Knight().plan_path()
-    Note that Knight().reconstruct_path() is useful for viewing the results.
-Level 3: Same as 2. Now we just excplicitly assume all inputs must be 1.
-    If your data_set wasn't already curated, then we'd convert each node
-    value to '.' As it stands, problem 3 applies to a board that has only
-    '.', 'S', & 'E', and the cost function I've used holds true.
-Level 4: Again, same as 2,3. It's just a matter of swapping the cost function.
-    In the Rock case, I chose to implement a absurdly high cost, rather than 
-    adding an explicit filter.
-    In the special cases of teleportation, and barriers, I chose to modify
-    the legal moves that were generated. It just made more logical sense
-    updating the node_generation method.
-Level 5:
-    Just a thought, but...plan the plan with a heuristic that iterates,
-    using the last map as the heuristic for the next. It would be slow,
-    but might get the job done.
+
 
 Major Assumption: This space is fully searchable, since the board is 32x32,
 meaning that 1024 positions exist, each with 8 possible moves. This is well
@@ -339,13 +321,18 @@ class Knight:
         Output: The location [y,x] of the exit teleport.
         """
 
+        # TODO: Consider 2 generalizations
+        #  1) multiple sets of teleport networks
+        #       mark as "T[id]", and then find_all_elements with that id, rather than all teleports
+        #  2) teleport networks with >= 2 nodes
+        #       return all teleport locations that are not self
+
         # No teleportation available from here
         if self.board.get_value(curr_pos) != "T":
             return None
 
         teleports = self.board.find_all_elements("T")
 
-        # TODO - this check should be upon board init - better to find out sooner
         if len(teleports) != 2:
             print("Board does not have 2 teleports. Don't know where it leads, and I was always told not to venture through mystery portals.")
             return None
@@ -356,7 +343,7 @@ class Knight:
         if teleports[1] == curr_pos:
             return teleports[0]
 
-    def display_knight(self, pos=None):
+    def display_current_map(self, pos=None):
         """
         Displays the board with the knight's current position overlaid.
         """
@@ -365,6 +352,30 @@ class Knight:
             pos = self.knight_pos
         pieces = {display_character: pos}
         self.board.display_board(pieces=pieces, value_width=1)
+
+    def display_path_as_list(self, path):
+        """
+        Pretty print for the list of positions in the path.
+        """
+        print("\nList of steps in path")
+        print_str = ""
+        for step_count, step in enumerate(path):
+            my_str = f"Step: {step_count}\t\t"+ "Path cost: %i \t" % self.cost_map.get_value(step)
+            print_str = print_str + my_str + "Position: " + str(step) + " -->\n"
+
+        print(print_str)
+
+    def display_path_as_grid(self, path):
+        print("\nPath (values indicate steps taken)")
+        journey = {}
+        journey_cost = {}
+        for step_num, step_node in enumerate(path):
+            journey[step_num] = step_node
+
+            # This line would map the total cost at each step, instead of the count
+            # journey_cost[self.cost_map.get_value(step_node)] = step_node
+
+        self.board.display_board(pieces=journey)
 
     def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
@@ -393,7 +404,7 @@ class Knight:
 
         # print starting state
         if rich_print:
-            self.display_knight(pos_sequence[0])
+            self.display_current_map(pos_sequence[0])
 
         pos_prev = pos_sequence[0]
 
@@ -415,7 +426,7 @@ class Knight:
                 return False
 
             if rich_print:
-                self.display_knight(pos)
+                self.display_current_map(pos)
 
             pos_prev = pos
 
