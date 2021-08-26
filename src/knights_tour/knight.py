@@ -201,7 +201,8 @@ class Knight:
 
 
         if x_on_board and y_on_board:
-            if self.board.get_value(target_pos) == "B":
+            value = self.board.get_value(target_pos)
+            if value == "B" or value == "R":
                 return False
             else:
                 return True
@@ -363,7 +364,7 @@ class Knight:
         if pos is None:
             pos = self.knight_pos
         pieces = {display_character: pos}
-        self.board.display_board(pieces=pieces)
+        self.board.display_board(pieces=pieces, value_width=1)
 
     def validate_pos_sequence(self, pos_sequence, rich_print=False):
         """
@@ -419,3 +420,45 @@ class Knight:
             pos_prev = pos
 
         return True
+
+    def problem1(self, pos_sequence):
+        """
+        Note: Addresses prompt: problem 1
+
+        Purpose:
+            Validates that a sequence of moves is valid for the knight to make:
+                - 2 spaces in a direction(x,y), 1 space in the other direction.
+                - Remains in bounds
+
+        Assumptions:
+            Board has been defined: checked explicitly.
+
+        Inputs:
+            move_sequence: A list of absolute positions, representing the target position after each move
+
+        Output:
+            bool: Whether the sequence of moves is valid
+        """
+        pos_prev = pos_sequence[0]
+
+        for pos in pos_sequence[1:]:
+            if not self.validate_within_bounds(pos):
+                return False
+
+            # First iteration, we have no previous pos to compare against
+            delta = pos_prev - pos
+
+            if self.validate_L_move(delta):
+                pass
+            else:
+                print(
+                    "2 adjascent positions represent a move that a"
+                    "knight is not permitted to make."
+                    "Invalid move:" + str(pos_prev) + "-->" + str(pos)
+                )
+                return False
+
+            pos_prev = pos
+
+        return True
+

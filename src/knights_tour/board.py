@@ -2,8 +2,9 @@
 Created by: Trevor Clark
 Created on: 4/27/2017
 """
-
 from .grid_pos import GridPos
+from .user_interface import TextUI
+
 
 class Board:
     """
@@ -14,14 +15,17 @@ class Board:
     Decoupled from any gameplay.
     """
 
-    def __init__(self, board_path=None):
+    def __init__(self, board_path=None, UI=TextUI):
         if board_path is None:
             # TODO: Rename to board_array (so as not to be confused with the class and module)
             self._board_grid = None
         else:
             self.load_board(board_path)
 
-    def display_board(self, pieces=None):
+        self.UI = UI
+
+    # TODO: Consider using kwargs
+    def display_board(self, pieces=None, value_width=1):
         """
         Displays a copy of the board.
 
@@ -31,12 +35,7 @@ class Board:
                 Dictionary, with display char as key, and elementDisplay pieces
                 on the board, over the underlying space.
         """
-        board_copy = [row[:] for row in self._board_grid]
-        if pieces is not None:
-            for piece in pieces:
-                board_copy[pieces[piece].x][pieces[piece].y] = piece
-
-        print("\n" + Board.board_to_str(board_copy))
+        TextUI.display_board(self._board_grid, pieces, value_width=value_width)
 
     def reset_board(self, value=None):
         """

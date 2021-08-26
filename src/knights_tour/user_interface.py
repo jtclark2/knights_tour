@@ -1,16 +1,12 @@
 """
-This is become circular for the text based case. I want the board object to standardize and own
-text-based representation (for read/write/display), so the display class needs to use the board's representation.
-However, the board needs the display class (dependency inversion) to properly interchangeable.
+Display module.
+Currently contains TextUI, which just prints to stdout.
 
-If I decide to pick this up again, I may separate the on-screen display representation from the file read/write
-representation, so that they are not coupled, and the circular dependency goes away. This introduces a small,
-but acceptable chance that the text based display string representation diverges from the representation saved to file.
+Future Improvements:
+    - Add GUI
+    - Formalize interface (or ABC)
 """
 
-
-
-from .board import Board
 
 # TODO: Formalize as an interface/abstract base class
 # class UI:
@@ -26,22 +22,30 @@ class TextUI:
         pass
 
     @staticmethod
-    def display_board(grid, pieces=None):
+    def display_board(grid, pieces=None, value_width = 2):
         """
         Displays a copy of the board.
 
         Inputs:
-            board: Board object
+            board: indexable 2D map
             pieces (Optional):
-                Dictionary, with display char as key, and elementDisplay pieces
-                on the board, over the underlying space.
+                Dictionary -  {piece:position}
+            value_width: Largest value allowed per space. Anything large will be truncated to value_width.
+                Too large a value may cause print to start wrapping.
         """
         board_copy = [row[:] for row in grid]
         if pieces is not None:
             for piece in pieces:
                 board_copy[pieces[piece].x][pieces[piece].y] = piece
 
-        #TODO: I put an extended note as the beginning of this file...get rid of dependency on "board_to_str"
-        print("\n" + Board.board_to_str(board_copy))
+        board_str = ""
+        for row in board_copy:
+            for element in row:
+                board_str += '{:{width}}'.format(str(element)[:value_width], width=str(value_width+1))
 
-UI = TextUI
+            board_str = board_str[:-1]  # remove trailing ' '
+            board_str = board_str + "\n"
+        board_str = board_str[:-1]  # remove trailing '\n'
+
+        print("\n" + board_str)
+

@@ -15,6 +15,7 @@ lint:
 # -v adjust verbosity
 # --cov=. provides a coverage report for everything within the current directory (the one the makefile is in)
 # Test/*.py specifies which files to test
+# TODO: I might not understand --cov=.
 test:
 	python -m pytest -v --cov=. tests/*.py
 

@@ -44,14 +44,13 @@ class BoardTester(unittest.TestCase):
         """
         Purpose: Verify that base case of board display works
         """
-
         print_buffer = StringIO()
         self.B._board_grid = self.board_ground_truth
 
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            user_interface.TextUI.display_board(self.board_ground_truth)
+            user_interface.TextUI.display_board(self.board_ground_truth, value_width=1)
         finally:
             sys.stdout = default_output
 
@@ -74,12 +73,11 @@ class BoardTester(unittest.TestCase):
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            user_interface.TextUI.display_board(self.board_ground_truth, pieces)
+            user_interface.TextUI.display_board(self.board_ground_truth, pieces, value_width=1)
         finally:
             sys.stdout = default_output
 
-        # print print_buffer.getvalue()
-        # print "Truth:"
-        # print str_board + '\n'
-        # Print automatically appends '\n', which is perfect for our usage
+        print(print_buffer.getvalue())
+        print("Truth:")
+        print(str_board + '\n')
         self.assertEqual(print_buffer.getvalue(), "\n" + str_board + "\n")

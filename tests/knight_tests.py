@@ -4,7 +4,7 @@ import unittest
 from src.knights_tour.knight import Knight
 
 # Additional resources
-from src.knights_tour.user_interface import UI
+from src.knights_tour.user_interface import *
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.board import Board
 
@@ -333,7 +333,7 @@ class KnightTester(unittest.TestCase):
         print_str = ""
         for step in path:
             my_str = "Cost: %i \t" % self.k.cost_map.get_value(step)
-            print_str = print_str + my_str + "Node: " + str(step)
+            print_str = print_str + my_str + "Node: " + str(step) + " -->\n"
 
         journey = {}
         journey_cost = {}
