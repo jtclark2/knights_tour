@@ -46,8 +46,8 @@ class KnightTester(unittest.TestCase):
         print("Journey:/n")
         self.k.journey_map.display_board(pieces = {f"█{val}█":pos for val,pos in journey.items()}, value_width=5)
 
-        self.k.game_mechanics.board.display_board(pieces=journey)
-        self.k.game_mechanics.board.display_board(pieces=journey_cost)
+        self.k.game_engine.board.display_board(pieces=journey)
+        self.k.game_engine.board.display_board(pieces=journey_cost)
 
     def test_explore_moves__single_step(self):
         """
@@ -57,8 +57,8 @@ class KnightTester(unittest.TestCase):
         start_pos = GridPos(1, 1)
         self.k = Knight(GameEngine(Board(board_path)), start_pos)
 
-        self.k.journey_map = copy.deepcopy(self.k.game_mechanics.board)
-        self.k.cost_map = copy.deepcopy(self.k.game_mechanics.board)
+        self.k.journey_map = copy.deepcopy(self.k.game_engine.board)
+        self.k.cost_map = copy.deepcopy(self.k.game_engine.board)
         self.k.cost_map.reset_board()
         self.k.journey_map.reset_board()
 
@@ -99,7 +99,7 @@ class KnightTester(unittest.TestCase):
             [None, None, None, None, None, None, None, None],
         ]
 
-        self.assertEqual(self.k.cost_map.grid, expected_cost_map)
+        self.assertEqual(self.k.cost_map._board_grid, expected_cost_map)
 
         expected_journey_map = [
             [None, None, None, GridPos(1, 1), None, None, None, None],
@@ -112,7 +112,7 @@ class KnightTester(unittest.TestCase):
             [None, None, None, None, None, None, None, None],
         ]
 
-        self.assertEqual(self.k.journey_map.grid, expected_journey_map)
+        self.assertEqual(self.k.journey_map._board_grid, expected_journey_map)
 
     # TODO: figure out what this really tests
     def test_plan_path(self):

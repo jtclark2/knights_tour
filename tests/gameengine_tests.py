@@ -11,7 +11,7 @@ class GameEngineTester(unittest.TestCase):
         """
         Setup the board, and place the knight
         """
-        self.k = Knight(GameEngine(Board("Boards/8x8_board.txt")))
+        self.game_engine = GameEngine(Board("Boards/8x8_board.txt"))
 
     def test_validate_node_sequence__pass(self):
         """
@@ -26,7 +26,7 @@ class GameEngineTester(unittest.TestCase):
             GridPos(6, 5),
         ]
 
-        valid = self.k.game_mechanics.validate_pos_sequence(positions)
+        valid = self.game_engine.validate_pos_sequence(positions)
         self.assertTrue(valid)
 
     def test_validate_node_sequence__fail_move_off_board(self):
@@ -35,14 +35,14 @@ class GameEngineTester(unittest.TestCase):
         """
         positions = [GridPos(0, 0), GridPos(2, 1), GridPos(1, -1)]
 
-        self.assertFalse(self.k.game_mechanics.validate_pos_sequence(positions))
+        self.assertFalse(self.game_engine.validate_pos_sequence(positions))
 
     def test_validate_node_sequence__fail_not_valid_for_knight(self):
         """
         Tests failure by falling off of the board
         """
         positions = [GridPos(0, 0), GridPos(2, 1), GridPos(4, 4)]
-        self.assertFalse(self.k.game_mechanics.validate_pos_sequence(positions))
+        self.assertFalse(self.game_engine.validate_pos_sequence(positions))
 
     def test_teleport__pass(self):
         """
@@ -51,8 +51,8 @@ class GameEngineTester(unittest.TestCase):
         """
         teleport_in = GridPos(11, 26)
         teleport_out = GridPos(23, 27)
-        self.k = Knight(GameEngine(Board("Boards/32x32_board.txt")), teleport_in)
-        out_pos = self.k.game_mechanics.teleport(teleport_in)
+        self.game_engine = GameEngine(Board("Boards/32x32_board.txt"))
+        out_pos = self.game_engine.teleport(teleport_in)
         self.assertEqual(out_pos, teleport_out)
 
     def test_teleport__no_tele_access(self):
@@ -61,8 +61,8 @@ class GameEngineTester(unittest.TestCase):
         correct exit locations.
         """
         start_pos = GridPos(15, 20)
-        self.k = Knight(GameEngine(Board("Boards/32x32_board.txt")), start_pos)
-        out_pos = self.k.game_mechanics.teleport(start_pos)
+        self.game_engine = GameEngine(Board("Boards/32x32_board.txt"))
+        out_pos = self.game_engine.teleport(start_pos)
         self.assertEqual(out_pos, None)
 
     def test_teleport__fail_too_many_tp(self):
@@ -71,24 +71,24 @@ class GameEngineTester(unittest.TestCase):
         """
         teleport_in = [11, 26]
         # teleport_out = [23, 27]
-        self.k = Knight(GameEngine(Board("Boards/32x32_board.txt")), teleport_in)
-        self.k.game_mechanics.board._board_grid[15][20] = "T"
+        self.game_engine = GameEngine(Board("Boards/32x32_board.txt"))
+        self.game_engine.board._board_grid[15][20] = "T"
         with self.assertRaises(Exception):
-            self.k.game_mechanics.teleport(teleport_in)
+            self.game_engine.teleport(teleport_in)
 
     def test_validate_within_bounds(self):
-        self.assertTrue(self.k.game_mechanics.validate_within_bounds(GridPos(0, 0)))
-        self.assertTrue(self.k.game_mechanics.validate_within_bounds(GridPos(0, 1)))
-        self.assertTrue(self.k.game_mechanics.validate_within_bounds(GridPos(4, 5)))
-        self.assertFalse(self.k.game_mechanics.validate_within_bounds(GridPos(-1, 0)))
-        self.assertFalse(self.k.game_mechanics.validate_within_bounds(GridPos(-2, -5)))
+        self.assertTrue(self.game_engine.validate_within_bounds(GridPos(0, 0)))
+        self.assertTrue(self.game_engine.validate_within_bounds(GridPos(0, 1)))
+        self.assertTrue(self.game_engine.validate_within_bounds(GridPos(4, 5)))
+        self.assertFalse(self.game_engine.validate_within_bounds(GridPos(-1, 0)))
+        self.assertFalse(self.game_engine.validate_within_bounds(GridPos(-2, -5)))
 
     def test_get_possible_nodes(self):
         """
         Verify that the correct nodes are returned.
         """
         curr_node = GridPos(1, 1)
-        nodes = self.k.game_mechanics.get_possible_moves(curr_node)
+        nodes = self.game_engine.get_possible_moves(curr_node)
         expected_valid_nodes = [
             GridPos(0, 3),
             GridPos(3, 0),
@@ -114,29 +114,25 @@ class GameEngineTester(unittest.TestCase):
         """
         Test that barriers can be detected appropriately.
         """
-        self.k = Knight(
-            GameEngine(Board("Boards/32x32_board.txt")),
-            start_pos=GridPos(0, 0),
-            end_pos=GridPos(31, 31),
-        )
+        self.game_engine = GameEngine(Board("Boards/32x32_board.txt"))
 
         curr_node = GridPos(0, 7)
         next_node = GridPos(1, 9)
-        valid = self.k.game_mechanics.validate_barrier_clear(curr_node, next_node)
+        valid = self.game_engine.validate_barrier_clear(curr_node, next_node)
         self.assertFalse(valid)
 
         curr_node = GridPos(0, 7)
         next_node = GridPos(1, 5)
-        valid = self.k.game_mechanics.validate_barrier_clear(curr_node, next_node)
+        valid = self.game_engine.validate_barrier_clear(curr_node, next_node)
         self.assertTrue(valid)
 
         # negative dx and dy cases (reverse the nodes)
         curr_node = GridPos(1, 9)
         next_node = GridPos(0, 7)
-        valid = self.k.game_mechanics.validate_barrier_clear(curr_node, next_node)
+        valid = self.game_engine.validate_barrier_clear(curr_node, next_node)
         self.assertFalse(valid)
 
         curr_node = GridPos(1, 5)
         next_node = GridPos(0, 7)
-        valid = self.k.game_mechanics.validate_barrier_clear(curr_node, next_node)
+        valid = self.game_engine.validate_barrier_clear(curr_node, next_node)
         self.assertTrue(valid)

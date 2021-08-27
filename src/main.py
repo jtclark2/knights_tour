@@ -1,5 +1,9 @@
 """
 This is a demonstration of the solutions to the 5 prompt problems.
+Note that my display is in the "spirit" of the prompt. The literal interpretation gives the option to
+print the world after each step, and that becomes verbose and confusing. Instead, I print the the path of the journey.
+Each number is the total cost to reach that point (most steps cost=1, so it's almost like numbering the steps).
+
 To experiment more, the specific solvers can be called:
     Problem
 
@@ -28,7 +32,7 @@ game_engine = GameEngine(Board(board_8x8))
 
 
 print("Run from 'knightboard/src/'")
-# Prompt problem #1:
+
 print('\n::::::::::Prompt 1::::::::::')
 # Ensure board is empty to start
 game_engine.board.reset_board(".")
@@ -59,7 +63,7 @@ print('\n::::::::::Prompt 2 & 3::::::::::')
 squire = Knight(GameEngine(Board(board_8x8)))
 
 print("Loaded map:")
-squire.game_mechanics.board.display_board(value_width=1)
+squire.game_engine.board.display_board(value_width=1)
 print("Solution:")
 squire.plan_path()
 path = squire.reconstruct_path()
@@ -73,7 +77,7 @@ print('\n::::::::::Prompt 4::::::::::')
 
 print("World map:")
 knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
-knight.game_mechanics.board.display_board(value_width=2)
+knight.game_engine.board.display_board(value_width=2)
 
 print("Solution:")
 knight.plan_path()

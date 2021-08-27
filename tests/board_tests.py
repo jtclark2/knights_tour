@@ -45,7 +45,7 @@ class BoardTester(unittest.TestCase):
         """
         Grabs the actual grid, list of lists, in the board object.
         """
-        self.assertEqual(self.B._board_grid, self.B.grid)
+        self.assertEqual(self.B._board_grid, self.B._board_grid)
 
     def test_get_width(self):
         self.B._board_grid = self.board_ground_truth[:-1]
@@ -59,7 +59,7 @@ class BoardTester(unittest.TestCase):
         """
         Purpose: Verify that values are read into each position correctly
         """
-        self.B.load_board("Boards/8x8_board.txt")
+        self.B = Board("Boards/8x8_board.txt")
         for row_ground, row_read in zip(self.board_ground_truth, self.B._board_grid):
             for element_ground, element_read in zip(row_ground, row_read):
                 self.assertEqual(element_ground, element_read)
@@ -74,7 +74,7 @@ class BoardTester(unittest.TestCase):
         self.board_ground_truth[5][3] = "S"  # Overwrite the correct data
 
         match = True
-        self.B.load_board("Boards/8x8_board.txt")
+        self.B = Board("Boards/8x8_board.txt")
         for row_ground, row_read in zip(self.board_ground_truth, self.B._board_grid):
             for element_ground, element_read in zip(row_ground, row_read):
                 if element_ground != element_read:
@@ -86,7 +86,7 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that the board dimensions match the .txt file
         Assumptions: 8x8_board.txt is well formatted, and represents an 8x8
         """
-        self.B.load_board("Boards/8x8_board.txt")
+        self.B = Board("Boards/8x8_board.txt")
         self.assertEqual(len(self.B._board_grid), 8)  # column count
         self.assertEqual(len(self.B._board_grid[0]), 8)  # row count
 
@@ -103,7 +103,7 @@ class BoardTester(unittest.TestCase):
     def test_reset_board(self):
         self.B._board_grid = self.board_ground_truth
         self.B.reset_board()
-        self.assertEqual(self.B.grid, [[None] * 8] * 8)
+        self.assertEqual(self.B._board_grid, [[None] * 8] * 8)
 
     def test_set_element(self):
         pos = GridPos(2, 7)

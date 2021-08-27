@@ -19,11 +19,7 @@ class BoardTester(unittest.TestCase):
         Init board for each test.
         """
 
-        import os
-        print("*"*1000)
-        print(os.path)
-
-        self.mech = GameEngine(Board("Boards/8x8_board.txt"))
+        self.board = Board("Boards/8x8_board.txt")
         self.board_ground_truth = [
             [".", ".", ".", ".", ".", ".", ".", "."],
             [".", ".", ".", ".", ".", ".", ".", "."],
@@ -51,12 +47,12 @@ class BoardTester(unittest.TestCase):
         Purpose: Verify that base case of board display works
         """
         print_buffer = StringIO()
-        self.mech._board_grid = self.board_ground_truth
+        self.board._board_grid = self.board_ground_truth
 
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            user_interface.TextUI.display_board(self.board_ground_truth, value_width=1)
+            user_interface.TextUI.display_board(self.board, value_width=1)
         finally:
             sys.stdout = default_output
 
@@ -71,7 +67,7 @@ class BoardTester(unittest.TestCase):
         """
 
         print_buffer = StringIO()
-        self.mech._board_grid = self.board_ground_truth
+        self.board._board_grid = self.board_ground_truth
         str_board = "A" + self.str_board_ground_truth[1:]
         str_board = str_board[:34] + "K" + str_board[34 + 1 :]
         pieces = {"A": GridPos(0, 0), "K": GridPos(2, 1)}
@@ -79,7 +75,7 @@ class BoardTester(unittest.TestCase):
         default_output = sys.stdout
         try:
             sys.stdout = print_buffer
-            user_interface.TextUI.display_board(self.board_ground_truth, pieces, value_width=1)
+            user_interface.TextUI.display_board(self.board, pieces, value_width=1)
         finally:
             sys.stdout = default_output
 

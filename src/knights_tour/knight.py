@@ -23,7 +23,7 @@ import copy
 
 class Knight:
     # ***
-    def __init__(self, game_mechanics, start_pos=None, end_pos=None):
+    def __init__(self, game_engine, start_pos=None, end_pos=None):
         """
         Initialize the knight on the board.
         Inputs:
@@ -31,30 +31,32 @@ class Knight:
             knight_start_pos: Expects input [row,col].
                               Finds 'S' on the board by default.
         """
-
-        self.game_mechanics = game_mechanics
+        self.game_engine = game_engine
 
         if start_pos is None:
             try:
-                self.start_pos = self.game_mechanics.board.find_all_elements("S")[0]
-            except IndexError:
-                self.start_pos = None
+                self.start_pos = self.game_engine.board.find_all_elements("S")[0]
+            except IndexError as err:
+                raise NameError("start_pos not provided, and no valid 'S'tart element found on board.") from err
         else:
             self.start_pos = start_pos
         self.knight_pos = self.start_pos
 
         if end_pos is None:
             try:
-                self.end_pos = self.game_mechanics.board.find_all_elements("E")[0]  # assuming only 1
-            except IndexError:
-                self.end_pos = None
+                self.end_pos = self.game_engine.board.find_all_elements("E")[0]  # assuming only 1
+            except IndexError as err:
+                raise NameError("end_pos not provided, and no valid 'E'nd element found on board.") from err
         else:
             self.end_pos = end_pos
 
-        if self.knight_pos is None:
-            raise Exception("Input Error: No knight start position provided.")
 
-        self.error_context = "Unexpected error. Context unknown."
+        # Initialize maps for the travel cost and path of journey (empty except for 0 cost at start)
+        self.journey_map = copy.deepcopy(self.game_engine.board)
+        self.journey_map.reset_board()
+        self.cost_map = copy.deepcopy(self.game_engine.board)
+        self.cost_map.reset_board()
+
 
     ################## Solver ##################
     def reconstruct_path(self):
@@ -91,9 +93,9 @@ class Knight:
         active_list = [self.start_pos]  # Init list with a start pos
 
         # Initialize maps for the travel cost and path of journey (empty except for 0 cost at start)
-        self.journey_map = copy.deepcopy(self.game_mechanics.board)
+        self.journey_map = copy.deepcopy(self.game_engine.board)
         self.journey_map.reset_board()
-        self.cost_map = copy.deepcopy(self.game_mechanics.board)
+        self.cost_map = copy.deepcopy(self.game_engine.board)
         self.cost_map.reset_board()
         self.cost_map.set_element(self.start_pos, 0)
 
@@ -129,9 +131,9 @@ class Knight:
                 - self.journey_map is updated with the current_position (where it moved from)
         """
         better_moves = [] # moves that are better (lower cost than previously encountered)
-        for new_pos in self.game_mechanics.get_possible_moves(curr_pos):
+        for new_pos in self.game_engine.get_possible_moves(curr_pos):
             try:
-                move_cost = self.game_mechanics.get_cost(self.game_mechanics.board.get_value(new_pos))
+                move_cost = self.game_engine.get_cost(self.game_engine.board.get_value(new_pos))
             except:
                 print(new_pos)
                 raise
@@ -173,10 +175,8 @@ class Knight:
         print("\nPath (values indicate steps taken)")
         # journey = {}
         journey_cost = {}
-        for step_num, step_node in enumerate(path):
-            # journey[step_num] = step_node # simple step count instead of cost
-
+        for _, step_node in enumerate(path):
             # This line would print total cost, instead of step count
             journey_cost[self.cost_map.get_value(step_node)] = step_node
 
-        self.game_mechanics.board.display_board(pieces=journey_cost, value_width=2)
+        self.game_engine.board.display_board(pieces=journey_cost, value_width=2)

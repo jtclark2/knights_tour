@@ -2,8 +2,21 @@ from .grid_pos import GridPos
 from .user_interface import TextUI
 
 class Board:
-    def __init__(self, board_path):
-        self.load_board(board_path)
+    def __init__(self, file_path):
+        """
+        TODO: should probably just use 2D numpy array
+        Reads the board from a text file, parsing and loading into memory
+        File Format: ' ' delimits elements in a row, and '\n' delimits between rows
+        Assumptions/Limitations: All boards must be rectangular, though not rectangular problems can be formatted
+        by adding Barriers ("B") to the unavailable space.
+        """
+        with open(file_path, "r", encoding="utf-8") as file:
+            board_str = file.read()
+
+        rows = board_str.split("\n")
+        self._board_grid = []
+        for row in rows:
+            self._board_grid.append(row.split(" "))
 
     # TODO: Consider using kwargs
     def display_board(self, pieces=None, value_width=1):
@@ -16,27 +29,16 @@ class Board:
                 Dictionary, with display char as key, and elementDisplay pieces
                 on the board, over the underlying space.
         """
-        TextUI.display_board(self._board_grid, pieces, value_width=value_width)
+        TextUI.display_board(self, pieces, value_width=value_width)
 
 
     def reset_board(self, value=None):
         """
-        Set all spoces on the board to a specific value
+        Set all elements on the board to a specific value
         """
         for i in range(self.get_width()):
             for j in range(self.get_height()):
                 self.set_element(GridPos(i, j), value)
-
-
-    # TODO: Consider removing this entirely...only needs to be exposed for testing
-    @property
-    def grid(self):
-        """
-        Getter for the main data object of this class, a grid representing a board
-        """
-        # TODO: make sense when board was a property for backing var _board...not sure now
-        return self._board_grid
-
 
     def get_value(self, pos):
         """
@@ -48,8 +50,6 @@ class Board:
             return self._board_grid[pos.x][pos.y]
         except(IndexError):
             print(f"Index out of range. Board size: {self.get_width(), self.get_height()}\tpos: {pos}")
-            raise
-        except:
             raise
 
 
@@ -85,24 +85,6 @@ class Board:
         """
         assert self._board_grid
         return len(self._board_grid)
-
-
-    def load_board(self, file_path):
-        """
-        TODO: should probably just use 2D numpy array
-        Reads the board from a text file, parsing and loading into memory
-        File Format: ' ' delimits elements in a row, and '\n' delimits between rows
-        Assumptions/Limitations: All boards must be rectangular, though not rectangular problems can be formatted
-        by adding Barriers ("B") to the unavailable space.
-        """
-        with open(file_path, "r", encoding="utf-8") as file:
-            board_str = file.read()
-
-        rows = board_str.split("\n")
-        self._board_grid = []
-        for row in rows:
-            self._board_grid.append(row.split(" "))
-
 
     def write_board(self, board=None, write_path="Boards/temp_board.txt"):
         """
