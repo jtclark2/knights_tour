@@ -4,7 +4,7 @@ from io import StringIO
 import unittest
 
 # Resources
-from src.knights_tour.gamemechanics import GameMechanics
+from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.board import Board
 
@@ -23,7 +23,7 @@ class BoardTester(unittest.TestCase):
         print("*"*1000)
         print(os.path)
 
-        self.mech = GameMechanics(Board("Boards/8x8_board.txt"))
+        self.mech = GameEngine(Board("Boards/8x8_board.txt"))
         self.board_ground_truth = [
             [".", ".", ".", ".", ".", ".", ".", "."],
             [".", ".", ".", ".", ".", ".", ".", "."],

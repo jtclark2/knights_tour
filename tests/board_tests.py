@@ -5,7 +5,6 @@ import os
 from src.knights_tour.grid_pos import GridPos
 
 # test target
-from src.knights_tour.gamemechanics import GameMechanics
 from src.knights_tour.board import Board
 
 
@@ -41,13 +40,6 @@ class BoardTester(unittest.TestCase):
         self.B._board_grid = self.board_ground_truth
         element = self.B.get_value(GridPos(2, 1))
         self.assertEqual(element, "S")
-
-    @unittest.skip(
-        "Seemed excessive for such a simple func..."
-        "could add for increased throughness."
-    )
-    def test_get_element_fail(self):
-        pass
 
     def test_get_board(self):
         """
@@ -131,8 +123,3 @@ class BoardTester(unittest.TestCase):
         self.B._board_grid = self.board_ground_truth
         self.B.set_element(pos, value)
         self.assertEqual(self.board_ground_truth, self.B._board_grid)
-
-
-if __name__ == "__main__":
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(BoardTester)
-    unittest.TextTestRunner().run(suite)

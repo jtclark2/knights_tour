@@ -14,7 +14,7 @@ Level 5:
 """
 
 from knights_tour.knight import Knight
-from knights_tour.gamemechanics import GameMechanics
+from knights_tour.gameengine import GameEngine
 from knights_tour.grid_pos import GridPos
 from knights_tour.board import Board
 
@@ -24,7 +24,7 @@ from knights_tour.board import Board
 board_dir = "../Boards"
 board_8x8 = board_dir + "/8x8_board.txt"
 board_32x32 = board_dir + "/32x32_board.txt"
-game_engine = GameMechanics(Board(board_8x8))
+game_engine = GameEngine(Board(board_8x8))
 
 
 print("Run from 'knightboard/src/'")
@@ -56,7 +56,7 @@ print(f"The sixth move is not (expect: False)? {valid}")
 
 # Prompt problem #2 & #3:
 print('\n::::::::::Prompt 2 & 3::::::::::')
-squire = Knight(GameMechanics(Board(board_8x8)))
+squire = Knight(GameEngine(Board(board_8x8)))
 
 print("Loaded map:")
 squire.game_mechanics.board.display_board(value_width=1)
@@ -72,7 +72,7 @@ print('\n::::::::::Prompt 4::::::::::')
 #   of the board class
 
 print("World map:")
-knight = Knight(GameMechanics(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
 knight.game_mechanics.board.display_board(value_width=2)
 
 print("Solution:")

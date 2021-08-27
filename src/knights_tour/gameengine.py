@@ -6,7 +6,7 @@ from .grid_pos import GridPos
 from .user_interface import TextUI
 
 
-class GameMechanics:
+class GameEngine:
     """
     Manages the "board", simple object in that stores the state of the board in memory.
         - Stores the object
