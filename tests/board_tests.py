@@ -6,6 +6,7 @@ from src.knights_tour.grid_pos import GridPos
 
 # test target
 from src.knights_tour.gamemechanics import GameMechanics
+from src.knights_tour.board import Board
 
 
 class BoardTester(unittest.TestCase):
@@ -13,7 +14,7 @@ class BoardTester(unittest.TestCase):
         """
         Init board for each test.
         """
-        self.B = GameMechanics()
+        self.B = Board("Boards/8x8_board.txt")
         self.board_ground_truth = [
             [".", ".", ".", ".", ".", ".", ".", "."],
             [".", ".", ".", ".", ".", ".", ".", "."],

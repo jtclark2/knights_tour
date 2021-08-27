@@ -16,6 +16,7 @@ Level 5:
 from knights_tour.knight import Knight
 from knights_tour.gamemechanics import GameMechanics
 from knights_tour.grid_pos import GridPos
+from knights_tour.board import Board
 
 # import termcolor
 # from termcolor import colored
@@ -23,52 +24,59 @@ from knights_tour.grid_pos import GridPos
 board_dir = "../Boards"
 board_8x8 = board_dir + "/8x8_board.txt"
 board_32x32 = board_dir + "/32x32_board.txt"
-my_knight = Knight(GameMechanics(board_8x8))
+game_engine = GameMechanics(Board(board_8x8))
 
+
+print("Run from 'knightboard/src/'")
+# Prompt problem #1:
+print('\n::::::::::Prompt 1::::::::::')
+# Ensure board is empty to start
+game_engine.board.reset_board(".")
+
+# Valid moves
 positions = [
     GridPos(0, 0),
     GridPos(2, 1),
     GridPos(4, 0),
     GridPos(3, 2),
     GridPos(4, 4),
-    GridPos(6, 5),
-    GridPos(0, 0), #Invalid
+    GridPos(6, 5)
 ]
-print("Run from 'knightboard/src/'")
-# Prompt problem #1:
-# Turn on updates with richprint (though printing every single step is noisy, so I just map it at the end)
-print('\n::::::::::Prompt 1::::::::::')
-
-valid = my_knight.game_mechanics.validate_pos_sequence(positions[:-1])
-print(f"Are first 5 moves valid (expect: True)? {valid}")
-valid = my_knight.game_mechanics.validate_pos_sequence(positions)
-print(f"Are all 6 moves valid (expect: False)? {valid}")
-
-# Display (not strictly part of this problem, but added for readability)
-my_knight.game_mechanics.reset_board(".")
 pieces = {f"{val}":pos for val,pos in enumerate(positions)}
-my_knight.game_mechanics.display_board(pieces=pieces, value_width=1)
+game_engine.board.display_board(pieces=pieces, value_width=1)
+valid = game_engine.validate_pos_sequence(positions)
+print(f"The first 5 moves valid (expect: True)? {valid}")
+
+#Invalid move,
+positions.append(GridPos(0, 7)) #Invalid
+pieces = {f"{val}":pos for val,pos in enumerate(positions)}
+game_engine.board.display_board(pieces=pieces, value_width=1)
+valid = game_engine.validate_pos_sequence(positions)
+print(f"The sixth move is not (expect: False)? {valid}")
 
 # Prompt problem #2 & #3:
 print('\n::::::::::Prompt 2 & 3::::::::::')
-my_knight.game_mechanics.load_board(board_8x8)
+squire = Knight(GameMechanics(Board(board_8x8)))
+
 print("Loaded map:")
-my_knight.game_mechanics.display_board(pieces=pieces, value_width=1)
+squire.game_mechanics.board.display_board(value_width=1)
 print("Solution:")
-my_knight.plan_path()
-path = my_knight.reconstruct_path()
-my_knight.display_path_as_grid(path)
-my_knight.display_path_as_list(path)
+squire.plan_path()
+path = squire.reconstruct_path()
+squire.display_path_as_grid(path)
+squire.display_path_as_list(path)
 
 # Prompt problem #2 & #3:
 print('\n::::::::::Prompt 4::::::::::')
 # TODO: not reloading boards correctly...honestly, this whole thing is a mess, and I just need to use numpy instead
 #   of the board class
-# my_knight.board.load_board(board_32x32)
-# print("Loaded map:")
-# my_knight.display_current_map()
-# print("Solution:")
-# my_knight.plan_path()
-# path = my_knight.reconstruct_path()
-# my_knight.display_path_as_grid(path)
-# my_knight.display_path_as_list(path)
+
+print("World map:")
+knight = Knight(GameMechanics(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+knight.game_mechanics.board.display_board(value_width=2)
+
+print("Solution:")
+knight.plan_path()
+path = knight.reconstruct_path()
+knight.display_path_as_grid(path)
+knight.display_path_as_list(path)

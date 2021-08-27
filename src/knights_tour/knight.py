@@ -23,7 +23,7 @@ import copy
 
 class Knight:
     # ***
-    def __init__(self, game_mechanics, start_pos=None, target_pos=None):
+    def __init__(self, game_mechanics, start_pos=None, end_pos=None):
         """
         Initialize the knight on the board.
         Inputs:
@@ -33,35 +33,30 @@ class Knight:
         """
 
         self.game_mechanics = game_mechanics
+
         if start_pos is None:
             try:
-                self.start_pos = self.game_mechanics.find_all_elements("S")[0]
+                self.start_pos = self.game_mechanics.board.find_all_elements("S")[0]
             except IndexError:
                 self.start_pos = None
         else:
             self.start_pos = start_pos
         self.knight_pos = self.start_pos
 
-        if target_pos is None:
+        if end_pos is None:
             try:
-                self.target_pos = self.game_mechanics.find_all_elements("E")[0]  # assuming only 1
+                self.end_pos = self.game_mechanics.board.find_all_elements("E")[0]  # assuming only 1
             except IndexError:
-                self.target_pos = None
+                self.end_pos = None
         else:
-            self.target_pos = target_pos
+            self.end_pos = end_pos
 
         if self.knight_pos is None:
             raise Exception("Input Error: No knight start position provided.")
 
-        self.journey_map = copy.deepcopy(game_mechanics)
-        self.cost_map = copy.deepcopy(game_mechanics)
-
         self.error_context = "Unexpected error. Context unknown."
 
     ################## Solver ##################
-
-
-    # ***
     def reconstruct_path(self):
         """
         Builds a path from starting point to target.
@@ -73,7 +68,7 @@ class Knight:
 
         """
         optimal_path = []
-        current_node = self.target_pos
+        current_node = self.end_pos
         while True:
             optimal_path.append(current_node)
             current_node = self.journey_map.get_value(current_node)
@@ -93,22 +88,21 @@ class Knight:
             self.journey_map: A board in which each value is a reference to the previous position. This
                 can be used to reconstruct the optimal path.
         """
-        active_list = [self.knight_pos]  # Init list with a start pos
+        active_list = [self.start_pos]  # Init list with a start pos
 
-        # Initialize map of journey costs
-        start_pos = self.knight_pos
-
-        self.cost_map.reset_board()
+        # Initialize maps for the travel cost and path of journey (empty except for 0 cost at start)
+        self.journey_map = copy.deepcopy(self.game_mechanics.board)
         self.journey_map.reset_board()
-
-        self.cost_map.set_element(start_pos, 0)
+        self.cost_map = copy.deepcopy(self.game_mechanics.board)
+        self.cost_map.reset_board()
+        self.cost_map.set_element(self.start_pos, 0)
 
         while True:
             # Rational moves are allowed for a knight, land on the board, and land
             # upon unexplored spaces
             exploratory_node = active_list.pop(0)
 
-            new_nodes = self.explore_moves(exploratory_node)
+            new_nodes = self._explore_moves(exploratory_node)
 
             for new_node in new_nodes:
                 active_list.append(new_node)
@@ -116,8 +110,7 @@ class Knight:
             if active_list == []:
                 return
 
-    # ***
-    def explore_moves(self, curr_pos):
+    def _explore_moves(self, curr_pos):
         """
         Consider all valid moves from a given position. Each move would land in a new position, with a specific total
         cost (cost to reach curr_pos + move_cost). If the new cost is better/lower than the previously recorded value
@@ -138,7 +131,7 @@ class Knight:
         better_moves = [] # moves that are better (lower cost than previously encountered)
         for new_pos in self.game_mechanics.get_possible_moves(curr_pos):
             try:
-                move_cost = self.game_mechanics.get_cost(self.game_mechanics.get_value(new_pos))
+                move_cost = self.game_mechanics.get_cost(self.game_mechanics.board.get_value(new_pos))
             except:
                 print(new_pos)
                 raise
@@ -146,19 +139,20 @@ class Knight:
             total_cost = path_cost + move_cost
 
             # Save lowest cost
-            if self.cost_map.get_value(new_pos) is None or total_cost < self.cost_map.get_value(new_pos):
+            recorded_total_cost = self.cost_map.get_value(new_pos)
+            if recorded_total_cost is None or total_cost < recorded_total_cost:
                 self.cost_map.set_element(new_pos, total_cost)
                 self.journey_map.set_element(new_pos, curr_pos)
                 better_moves.append(new_pos)
 
         return better_moves
 
-    def move_heuristic(self):
-        """
-        Provide heuristic of distance remaining.
-        This could help find more effective routes, by biasing the search.
-        """
-        raise NotImplementedError
+    # def move_heuristic(self):
+    #     """
+    #     Provide heuristic of distance remaining.
+    #     This could help find more effective routes, by biasing the search.
+    #     """
+    #     raise NotImplementedError
 
     ##################### Display ####################
     # using underlying display object to display about the planned path
@@ -177,12 +171,12 @@ class Knight:
 
     def display_path_as_grid(self, path):
         print("\nPath (values indicate steps taken)")
-        journey = {}
-        # journey_cost = {}
+        # journey = {}
+        journey_cost = {}
         for step_num, step_node in enumerate(path):
-            journey[step_num] = step_node
+            # journey[step_num] = step_node # simple step count instead of cost
 
-            # This line would map the total cost at each step, instead of the count
-            # journey_cost[self.cost_map.get_value(step_node)] = step_node
+            # This line would print total cost, instead of step count
+            journey_cost[self.cost_map.get_value(step_node)] = step_node
 
-        self.game_mechanics.display_board(pieces=journey)
+        self.game_mechanics.board.display_board(pieces=journey_cost, value_width=2)

@@ -1,4 +1,5 @@
 import unittest
+import copy
 
 # Test target
 from src.knights_tour.knight import Knight
@@ -7,6 +8,7 @@ from src.knights_tour.knight import Knight
 from src.knights_tour.user_interface import *
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.gamemechanics import GameMechanics
+from src.knights_tour.board import Board
 
 class KnightTester(unittest.TestCase):
     """
@@ -17,8 +19,7 @@ class KnightTester(unittest.TestCase):
         """
         Setup the board, and place the knight
         """
-        self.k = Knight(GameMechanics("Boards/8x8_board.txt"))
-        self.str_board_truth = self.k.game_mechanics
+        self.k = Knight(GameMechanics(Board("Boards/8x8_board.txt")))
 
     def test_validate_node_sequence__pass(self):
         """
@@ -58,7 +59,7 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = GridPos(11, 26)
         teleport_out = GridPos(23, 27)
-        self.k = Knight(GameMechanics("Boards/32x32_board.txt"), teleport_in)
+        self.k = Knight(GameMechanics(Board("Boards/32x32_board.txt")), teleport_in)
         out_pos = self.k.game_mechanics.teleport(teleport_in)
         self.assertEqual(out_pos, teleport_out)
 
@@ -68,7 +69,7 @@ class KnightTester(unittest.TestCase):
         correct exit locations.
         """
         start_pos = GridPos(15, 20)
-        self.k = Knight(GameMechanics("Boards/32x32_board.txt"), start_pos)
+        self.k = Knight(GameMechanics(Board("Boards/32x32_board.txt")), start_pos)
         out_pos = self.k.game_mechanics.teleport(start_pos)
         self.assertEqual(out_pos, None)
 
@@ -78,8 +79,8 @@ class KnightTester(unittest.TestCase):
         """
         teleport_in = [11, 26]
         # teleport_out = [23, 27]
-        self.k = Knight(GameMechanics("Boards/32x32_board.txt"), teleport_in)
-        self.k.game_mechanics._board_grid[15][20] = "T"
+        self.k = Knight(GameMechanics(Board("Boards/32x32_board.txt")), teleport_in)
+        self.k.game_mechanics.board._board_grid[15][20] = "T"
         with self.assertRaises(Exception):
             self.k.game_mechanics.teleport(teleport_in)
 
@@ -123,17 +124,17 @@ class KnightTester(unittest.TestCase):
         """
         board_path = "Boards/8x8_board.txt"
         start_pos = GridPos(1, 1)
-        self.k = Knight(GameMechanics(board_path), start_pos)
+        self.k = Knight(GameMechanics(Board(board_path)), start_pos)
 
-        self.k.journey_map = GameMechanics(board_path)
-        self.k.cost_map = GameMechanics(board_path)
+        self.k.journey_map = copy.deepcopy(self.k.game_mechanics.board)
+        self.k.cost_map = copy.deepcopy(self.k.game_mechanics.board)
         self.k.cost_map.reset_board()
         self.k.journey_map.reset_board()
 
         self.k.cost_map.set_element(start_pos, 0)
 
         # make sure the appropriate nodes are found
-        nodes = self.k.explore_moves(start_pos)
+        nodes = self.k._explore_moves(start_pos)
 
         expected_valid_nodes = [
             GridPos(0, 3),
@@ -196,9 +197,9 @@ class KnightTester(unittest.TestCase):
     def test_reconstruct_path_32x32(self):
 
         self.k = Knight(
-            GameMechanics("Boards/32x32_board.txt"),
+            GameMechanics(Board("Boards/32x32_board.txt")),
             start_pos=GridPos(0, 0),
-            target_pos=GridPos(31, 31),
+            end_pos=GridPos(31, 31),
         )
 
         # show the teleport feature
@@ -219,17 +220,17 @@ class KnightTester(unittest.TestCase):
         print("Journey:/n")
         self.k.journey_map.display_board(pieces = {f"█{val}█":pos for val,pos in journey.items()}, value_width=5)
 
-        self.k.game_mechanics.display_board(pieces=journey)
-        self.k.game_mechanics.display_board(pieces=journey_cost)
+        self.k.game_mechanics.board.display_board(pieces=journey)
+        self.k.game_mechanics.board.display_board(pieces=journey_cost)
 
     def test_validate_barrier_clear__pass(self):
         """
         Test that barriers can be detected appropriately.
         """
         self.k = Knight(
-            GameMechanics("Boards/32x32_board.txt"),
+            GameMechanics(Board("Boards/32x32_board.txt")),
             start_pos=GridPos(0, 0),
-            target_pos=GridPos(31, 31),
+            end_pos=GridPos(31, 31),
         )
 
         curr_node = GridPos(0, 7)
