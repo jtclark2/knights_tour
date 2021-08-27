@@ -124,4 +124,3 @@ class Board:
             board_str = board_str + "\n"
         board_str = board_str[:-1]  # remove trailing '\n'
         return board_str
-

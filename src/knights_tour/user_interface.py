@@ -8,7 +8,7 @@ Future Improvements:
 """
 import copy
 
-from src.knights_tour.grid_pos import GridPos
+from .grid_pos import GridPos
 
 # TODO: Formalize as an interface/abstract base class
 # class UI:
