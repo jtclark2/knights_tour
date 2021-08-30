@@ -1,6 +1,5 @@
 """
 Information about various pieces that can exist on a board.
-TODO: Refactor board.find_element, board.get_element, board.get_cost
 """
 from enum import Enum
 

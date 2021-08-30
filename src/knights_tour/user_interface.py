@@ -7,24 +7,30 @@ Future Improvements:
     - Formalize interface (or ABC)
 """
 import copy
+import abc
 
 from .grid_pos import GridPos
 
-# TODO: Formalize as an interface/abstract base class
-# class UI:
-#     def __init__(self):
-#         raise NotImplementedError
-#
-#     @staticmethod
-#     def display_board(board, pieces=None):
-#         raise NotImplementedError
+class AbstractUI(metaclass=abc.ABCMeta):
 
-class TextUI:
+    @classmethod
+    def display_board(cls, board, pieces=None, value_width = 2):
+        raise NotImplementedError
+
+    @classmethod
+    def display_path_as_list(cls, path, cost_map):
+        raise NotImplementedError
+
+    @classmethod
+    def display_path_as_grid(cls, board, path, cost_map):
+        raise NotImplementedError
+
+class TextUI(AbstractUI):
     def __init__(self):
         pass
 
-    @staticmethod
-    def display_board(board, pieces=None, value_width = 2):
+    @classmethod
+    def display_board(cls, board, pieces=None, value_width = 2):
         """
         Displays a copy of the board.
 
@@ -60,3 +66,43 @@ class TextUI:
 
         print("\n" + board_str)
 
+    @classmethod
+    def display_path_as_list(cls, path, cost_map):
+        """
+        Helper for printing pretty, and with costs.
+
+        Inputs:
+            path: a list of GridPos, representing the path an agent has taken.
+            cost_map: a Board, representing the costs to get to available spaces on the map. All path positions
+            must be populated.
+        """
+        print("\nList of steps in path")
+        print_str = ""
+        for step_count, step in enumerate(path):
+            my_str = f"Step: {step_count}\t\t"+ "Path cost: %i \t" % cost_map.get_value(step)
+            print_str = print_str + my_str + "Position: " + str(step) + " -->\n"
+
+        print(print_str)
+
+    @classmethod
+    def display_path_as_grid(cls, board, path, cost_map):
+        """
+        Helper method for show the path traveled spatially.
+
+        Inputs:
+            path: a list of GridPos, representing the path an agent has taken.
+            cost_map: a Board, representing the costs to get to available spaces on the map. All path positions
+            must be populated.
+        """
+        print("\nPath (values indicate cost of most efficient journey)")
+        # journey = {}
+        journey_cost = {}
+        for _, step_node in enumerate(path):
+            # This line would print total cost, instead of step count
+            journey_cost[step_node] = cost_map.get_value(step_node)
+
+        cls.display_board(board, pieces=journey_cost, value_width=2)
+
+
+# Configuration
+UI = TextUI

@@ -8,6 +8,7 @@ from src.knights_tour.knight import Knight
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.board import Board
+from src.knights_tour.user_interface import UI
 
 class KnightTester(unittest.TestCase):
     """
@@ -20,6 +21,7 @@ class KnightTester(unittest.TestCase):
         """
         self.k = Knight(GameEngine(Board("Boards/8x8_board.txt")))
 
+    # TODO: Really should have an assert...ensures the methods run, but not how they run
     def test_reconstruct_path_32x32(self):
 
         self.k = Knight(
@@ -31,7 +33,7 @@ class KnightTester(unittest.TestCase):
         self.k.plan_path()
 
         path = self.k.reconstruct_path()
-        self.k.display_path_as_list(path)
+        UI.display_path_as_list(path, self.k.cost_map)
 
         journey = {}
         journey_cost = {}
@@ -40,12 +42,13 @@ class KnightTester(unittest.TestCase):
             journey_cost[step_node] = self.k.cost_map.get_value(step_node)
 
         print("Cost:/n")
-        self.k.cost_map.display_board(pieces = journey)
+        UI.display_board(self.k.game_engine.board, pieces = journey)
         print("Journey:/n")
-        self.k.journey_map.display_board(pieces = {pos:f"█{val}█" for pos,val in journey.items()}, value_width=5)
+        pieces = {pos:f"█{val}█" for pos,val in journey.items()}
+        UI.display_board(self.k.journey_map, pieces = pieces, value_width=5)
 
-        self.k.game_engine.board.display_board(pieces=journey)
-        self.k.game_engine.board.display_board(pieces=journey_cost)
+        UI.display_board(self.k.journey_map, pieces = journey, value_width=5)
+        UI.display_board(self.k.journey_map, pieces = journey_cost, value_width=5)
 
     def test_explore_moves__single_step(self):
         """

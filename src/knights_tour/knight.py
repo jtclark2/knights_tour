@@ -140,24 +140,3 @@ class Knight:
     ##################### Display ####################
     # using underlying display object to display about the planned path
 
-    def display_path_as_list(self, path):
-        """
-        Pretty print for the list of positions in the path.
-        """
-        print("\nList of steps in path")
-        print_str = ""
-        for step_count, step in enumerate(path):
-            my_str = f"Step: {step_count}\t\t"+ "Path cost: %i \t" % self.cost_map.get_value(step)
-            print_str = print_str + my_str + "Position: " + str(step) + " -->\n"
-
-        print(print_str)
-
-    def display_path_as_grid(self, path):
-        print("\nPath (values indicate cost of most efficient journey)")
-        # journey = {}
-        journey_cost = {}
-        for _, step_node in enumerate(path):
-            # This line would print total cost, instead of step count
-            journey_cost[step_node] = self.cost_map.get_value(step_node)
-
-        self.game_engine.board.display_board(pieces=journey_cost, value_width=2)

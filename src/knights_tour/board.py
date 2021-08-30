@@ -16,15 +16,12 @@ using list(list()) instead, despite the drawbacks to speed. Reasons include:
     get the performance gains anways, since I'm accessing random elements, rather than passing entire vectors/arrays.
 """
 
-
-
 from .grid_pos import GridPos
-from .user_interface import TextUI
+
 
 class Board:
     def __init__(self, file_path):
         """
-        TODO: should probably just use 2D numpy array
         Reads the board from a text file, parsing and loading into memory
         File Format: ' ' delimits elements in a row, and '\n' delimits between rows
         Assumptions/Limitations: All boards must be rectangular, though not rectangular problems can be formatted
@@ -37,21 +34,6 @@ class Board:
         self._board_grid = []
         for row in rows:
             self._board_grid.append(row.split(" "))
-
-    # TODO: Consider using kwargs
-    def display_board(self, pieces=None, value_width=1):
-        """
-        Displays a copy of the board.
-
-        Inputs:
-            board: Board object
-            pieces (Optional):
-                Dictionary, with display char as key, and elementDisplay pieces
-                on the board, over the underlying space.
-        """
-        # TODO: really shouldn't hardcode TextUI here. Pass in the user_interface class
-        TextUI.display_board(self, pieces, value_width=value_width)
-
 
     def reset_board(self, value=None):
         """

@@ -21,6 +21,7 @@ from knights_tour.knight import Knight
 from knights_tour.gameengine import GameEngine
 from knights_tour.grid_pos import GridPos
 from knights_tour.board import Board
+from knights_tour.user_interface import UI
 
 # import termcolor
 # from termcolor import colored
@@ -63,14 +64,14 @@ positions = [
     GridPos(6, 5)
 ]
 pieces = {pos: f"{val}" for val,pos in enumerate(positions)}
-game_engine.board.display_board(pieces=pieces, value_width=1)
+UI.display_board(game_engine.board, pieces=pieces, value_width=1)
 valid = game_engine.validate_pos_sequence(positions)
 print(f"The first 5 moves valid (expect: True)? {valid}")
 
-#Invalid move,
-positions.append(GridPos(0, 7)) #Invalid
+# Invalid move
+positions.append(GridPos(0, 7)) # Invalid
 pieces = {pos:f"{val}" for val,pos in enumerate(positions)}
-game_engine.board.display_board(pieces=pieces, value_width=1)
+UI.display_board(game_engine.board, pieces=pieces, value_width=1)
 valid = game_engine.validate_pos_sequence(positions)
 print(f"The sixth move is not (expect: False)? {valid}")
 
@@ -79,26 +80,23 @@ print('\n::::::::::Prompt 2 & 3::::::::::')
 squire = Knight(GameEngine(Board(board_8x8)))
 
 print("Loaded map:")
-squire.game_engine.board.display_board(value_width=1)
+UI.display_board(squire.game_engine.board, value_width=1)
 print("Solution:")
 squire.plan_path()
 path = squire.reconstruct_path()
-squire.display_path_as_grid(path)
-squire.display_path_as_list(path)
+UI.display_path_as_grid(squire.game_engine.board, path, squire.cost_map)
+UI.display_path_as_list(path, squire.cost_map)
 
 
 print('\n::::::::::Prompt 4::::::::::')
-# TODO: not reloading boards correctly...honestly, this whole thing is a mess, and I just need to use numpy instead
-#   of the board class
-
 print("World map:")
 knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
 
 print("Solution:")
 knight.plan_path()
 path = knight.reconstruct_path()
-knight.display_path_as_list(path)
-knight.display_path_as_grid(path)
+UI.display_path_as_list(path, knight.cost_map)
+UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
 
 
 print('Scroll up to see solutions to all the prompts.')

@@ -1,4 +1,5 @@
 TODO: Future Improvements:
     - Add the 5th case
     - Consider adding the 3rd pattern to the barrier-check (or not, I kind of like it this way too)
-    - Consider adding GUI in addition to TextUI and generalizing a real interface for UI
+    - Expand teleport functions...if you're bored
+    - Tests need an overhaul...which I probably won't do unless I actively modify the function of the associated code
