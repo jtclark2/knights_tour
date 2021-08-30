@@ -6,6 +6,7 @@ Created on: 4/27/2017
 """
 from .grid_pos import GridPos
 from .user_interface import TextUI
+from .pieces import Pieces
 
 
 class GameEngine:
@@ -48,7 +49,7 @@ class GameEngine:
 
         if x_on_board and y_on_board:
             value = self.board.get_value(target_pos)
-            if value == "B" or value == "R":
+            if value == Pieces.BARRIER.value or value == Pieces.ROCK.value:
                 return False
             else:
                 return True
@@ -65,7 +66,7 @@ class GameEngine:
         horizontal_path_clear = True
         while travel_pos.x != stop_x:  # take 1 or 2 steps (depending on the move)
             travel_pos += GridPos(sign, 0)  # take one step in horizontal direction
-            if self.board.get_value(travel_pos) == "B":
+            if self.board.get_value(travel_pos) == Pieces.BARRIER.value:
                 horizontal_path_clear = False
 
         return horizontal_path_clear
@@ -78,7 +79,7 @@ class GameEngine:
         vertical_path_clear = True
         while travel_pos.y != stop_y:  # take 1 or 2 steps (depending on the move)
             travel_pos += GridPos(0, sign)  # take one step in horizontal direction
-            if self.board.get_value(travel_pos) == "B":
+            if self.board.get_value(travel_pos) == Pieces.BARRIER.value:
                 vertical_path_clear = False
 
         return vertical_path_clear
@@ -159,15 +160,15 @@ class GameEngine:
         Return cost for landing on a specific location (ie: the cost of the move).
         """
         value_lookup = {
-            "B": 100000,
-            ".": 1,
-            "W": 2,
-            "R": 100000,  # infinite, if you want
-            "T": 1,
-            "L": 5,
-            "S": 0,  # mute point, since costs acrue upon landing
-            "E": 1,
-        }  # We assume 'E' is still '.' underneath
+            Pieces.BARRIER.value: 100000,
+            Pieces.EMPTY.value: 1,
+            Pieces.WATER.value: 2,
+            Pieces.ROCK.value: 100000,  # infinite, if you want
+            Pieces.TELEPORT.value: 1,
+            Pieces.LAVA.value: 5,
+            Pieces.START.value: 0,  # mute point, since costs acrue upon landing
+            Pieces.END.value: 1,
+        }  # 'E' is empty (eg: don't allow it to be water, lava, teleport, etc.)
         return value_lookup[value]
 
     def teleport(self, curr_pos):
@@ -186,10 +187,10 @@ class GameEngine:
         #       return all teleport locations that are not self
 
         # No teleportation available from here
-        if self.board.get_value(curr_pos) != "T":
+        if self.board.get_value(curr_pos) != Pieces.TELEPORT.value:
             return None
 
-        teleports = self.board.find_all_elements("T")
+        teleports = self.board.find_all_elements(Pieces.TELEPORT.value)
 
         if len(teleports) != 2:
             print("Board does not have 2 teleports. Don't know where it leads, and I was always told not to venture through mystery portals.")

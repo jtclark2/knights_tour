@@ -28,8 +28,6 @@ class KnightTester(unittest.TestCase):
             end_pos=GridPos(31, 31),
         )
 
-        # show the teleport feature
-        # self.k.board.set_element(GridPos(5,8), ".")
         self.k.plan_path()
 
         path = self.k.reconstruct_path()

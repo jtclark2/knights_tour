@@ -28,7 +28,7 @@ class Board:
         Reads the board from a text file, parsing and loading into memory
         File Format: ' ' delimits elements in a row, and '\n' delimits between rows
         Assumptions/Limitations: All boards must be rectangular, though not rectangular problems can be formatted
-        by adding Barriers ("B") to the unavailable space.
+        by adding Barriers to the unavailable space.
         """
         with open(file_path, "r", encoding="utf-8") as file:
             board_str = file.read()

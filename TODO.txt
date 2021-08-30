@@ -1,5 +1,4 @@
 TODO: Future Improvements:
     - Add the 5th case
-    - Create Enums for all the special objects (currently uses characters)
     - Consider adding the 3rd pattern to the barrier-check (or not, I kind of like it this way too)
-    - Consider adding UI
+    - Consider adding GUI in addition to TextUI and generalizing a real interface for UI

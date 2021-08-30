@@ -3,8 +3,7 @@ import unittest
 from src.knights_tour.board import Board
 from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.grid_pos import GridPos
-from src.knights_tour.knight import Knight
-
+from src.knights_tour.pieces import Pieces
 
 class GameEngineTester(unittest.TestCase):
     def setUp(self):
@@ -70,9 +69,8 @@ class GameEngineTester(unittest.TestCase):
         Verify that a poorly formed board is detected.
         """
         teleport_in = [11, 26]
-        # teleport_out = [23, 27]
         self.game_engine = GameEngine(Board("Boards/32x32_board.txt"))
-        self.game_engine.board._board_grid[15][20] = "T"
+        self.game_engine.board._board_grid[15][20] = Pieces.TELEPORT.value
         with self.assertRaises(Exception):
             self.game_engine.teleport(teleport_in)
 

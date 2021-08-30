@@ -1,7 +1,6 @@
-
 import copy
 
-# TODO: cost_map and journey_map are NOT game_mechanics objects. Just use numpy arrays instead
+from .pieces import Pieces
 
 class Knight:
     # ***
@@ -17,7 +16,7 @@ class Knight:
 
         if start_pos is None:
             try:
-                self.start_pos = self.game_engine.board.find_all_elements("S")[0]
+                self.start_pos = self.game_engine.board.find_all_elements(Pieces.START.value)[0]
             except IndexError as err:
                 raise NameError("start_pos not provided, and no valid 'S'tart element found on board.") from err
         else:
@@ -26,7 +25,7 @@ class Knight:
 
         if end_pos is None:
             try:
-                self.end_pos = self.game_engine.board.find_all_elements("E")[0]  # assuming only 1
+                self.end_pos = self.game_engine.board.find_all_elements(Pieces.END.value)[0]  # assuming only 1
             except IndexError as err:
                 raise NameError("end_pos not provided, and no valid 'E'nd element found on board.") from err
         else:

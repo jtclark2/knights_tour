@@ -3,6 +3,7 @@ import os
 
 # local imports
 from src.knights_tour.grid_pos import GridPos
+from src.knights_tour.pieces import Pieces
 
 # test target
 from src.knights_tour.board import Board
@@ -14,32 +15,26 @@ class BoardTester(unittest.TestCase):
         Init board for each test.
         """
         self.B = Board("Boards/8x8_board.txt")
-        self.board_ground_truth = [
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", "S", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", "E", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-        ]
 
-        self.str_board_ground_truth = (
-            ". . . . . . . .\n"
-            ". . . . . . . .\n"
-            ". S . . . . . .\n"
-            ". . . . . . . .\n"
-            ". . . . . E . .\n"
-            ". . . . . . . .\n"
-            ". . . . . . . .\n"
-            ". . . . . . . ."
-        )
+        # Using trivial var names for readability
+        S = Pieces.START.value
+        E = Pieces.END.value
+        _ = Pieces.EMPTY.value
+        self.board_ground_truth = [
+            [_, _, _, _, _, _, _, _],
+            [_, _, _, _, _, _, _, _],
+            [_, S, _, _, _, _, _, _],
+            [_, _, _, _, _, _, _, _],
+            [_, _, _, _, _, E, _, _],
+            [_, _, _, _, _, _, _, _],
+            [_, _, _, _, _, _, _, _],
+            [_, _, _, _, _, _, _, _],
+        ]
 
     def test_get_element_pass(self):
         self.B._board_grid = self.board_ground_truth
         element = self.B.get_value(GridPos(2, 1))
-        self.assertEqual(element, "S")
+        self.assertEqual(element, Pieces.START.value)
 
     def test_get_board(self):
         """
@@ -71,7 +66,7 @@ class BoardTester(unittest.TestCase):
               quick enough to implement, so...
         """
 
-        self.board_ground_truth[5][3] = "S"  # Overwrite the correct data
+        self.board_ground_truth[5][3] = Pieces.START.value # Overwrite the correct data
 
         match = True
         self.B = Board("Boards/8x8_board.txt")
@@ -92,7 +87,7 @@ class BoardTester(unittest.TestCase):
 
     def test_find_element__pass_single_element(self):
         self.B._board_grid = self.board_ground_truth
-        pos = self.B.find_all_elements("S")[0]
+        pos = self.B.find_all_elements(Pieces.START.value)[0]
         self.assertEqual(pos, GridPos(2, 1))
 
     def test_find_element__element_DNE(self):
@@ -108,17 +103,6 @@ class BoardTester(unittest.TestCase):
     def test_set_element(self):
         pos = GridPos(2, 7)
         value = 5
-
-        self.board_ground_truth = [
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", "S", ".", ".", ".", ".", ".", 5],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", "E", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-            [".", ".", ".", ".", ".", ".", ".", "."],
-        ]
 
         self.B._board_grid = self.board_ground_truth
         self.B.set_element(pos, value)
