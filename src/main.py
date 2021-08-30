@@ -62,14 +62,14 @@ positions = [
     GridPos(4, 4),
     GridPos(6, 5)
 ]
-pieces = {f"{val}":pos for val,pos in enumerate(positions)}
+pieces = {pos: f"{val}" for val,pos in enumerate(positions)}
 game_engine.board.display_board(pieces=pieces, value_width=1)
 valid = game_engine.validate_pos_sequence(positions)
 print(f"The first 5 moves valid (expect: True)? {valid}")
 
 #Invalid move,
 positions.append(GridPos(0, 7)) #Invalid
-pieces = {f"{val}":pos for val,pos in enumerate(positions)}
+pieces = {pos:f"{val}" for val,pos in enumerate(positions)}
 game_engine.board.display_board(pieces=pieces, value_width=1)
 valid = game_engine.validate_pos_sequence(positions)
 print(f"The sixth move is not (expect: False)? {valid}")

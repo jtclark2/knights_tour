@@ -38,13 +38,13 @@ class KnightTester(unittest.TestCase):
         journey = {}
         journey_cost = {}
         for step_num, step_node in enumerate(path):
-            journey[step_num] = step_node
-            journey_cost[self.k.cost_map.get_value(step_node)] = step_node
+            journey[step_node] = step_num
+            journey_cost[step_node] = self.k.cost_map.get_value(step_node)
 
         print("Cost:/n")
         self.k.cost_map.display_board(pieces = journey)
         print("Journey:/n")
-        self.k.journey_map.display_board(pieces = {f"█{val}█":pos for val,pos in journey.items()}, value_width=5)
+        self.k.journey_map.display_board(pieces = {pos:f"█{val}█" for pos,val in journey.items()}, value_width=5)
 
         self.k.game_engine.board.display_board(pieces=journey)
         self.k.game_engine.board.display_board(pieces=journey_cost)

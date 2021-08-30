@@ -26,3 +26,6 @@ class GridPos:
 
     def __repr__(self):
         return "%r,%r" % (self.x, self.y)
+
+    def __hash__(self):
+        return hash((self.x, self.y)) # needed as dict key

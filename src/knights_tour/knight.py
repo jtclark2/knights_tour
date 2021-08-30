@@ -159,6 +159,6 @@ class Knight:
         journey_cost = {}
         for _, step_node in enumerate(path):
             # This line would print total cost, instead of step count
-            journey_cost[self.cost_map.get_value(step_node)] = step_node
+            journey_cost[step_node] = self.cost_map.get_value(step_node)
 
         self.game_engine.board.display_board(pieces=journey_cost, value_width=2)

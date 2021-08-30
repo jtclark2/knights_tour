@@ -49,6 +49,7 @@ class Board:
                 Dictionary, with display char as key, and elementDisplay pieces
                 on the board, over the underlying space.
         """
+        # TODO: really shouldn't hardcode TextUI here. Pass in the user_interface class
         TextUI.display_board(self, pieces, value_width=value_width)
 
 

@@ -45,7 +45,7 @@ class TextUI:
         # build a new one, so we don't just create a reference and muck up the original
         board = copy.deepcopy(board)
         if pieces is not None:
-            for val, pos in pieces.items():
+            for pos, val in pieces.items():
                 board.set_element(pos, val)
 
         board_str = ""
