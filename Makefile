@@ -20,3 +20,9 @@ test:
 	python -m pytest -v --cov=. tests/*.py
 
 all: install format test lint
+
+
+run:
+	cd src
+	python src/main.py
+	cd ..

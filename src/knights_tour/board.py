@@ -1,3 +1,23 @@
+"""
+Purpose:
+Encapsulate the operations of a board, which manages placement/navigation of objects in positions.
+
+Assumptions:
+    a) Board is rectangular, though non-rectangular shapes can be calculated by populating the Barriers.
+
+Created by: Trevor Clark
+
+Tehnical note: Board is a wrapper for 2D grid. Originally, numpy seemed like the obvious choice, but I ended up
+using list(list()) instead, despite the drawbacks to speed. Reasons include:
+    1) Easily support str, num, and None value types
+    2) pass around coodinate position objects, rather than x and y values (or a 1D array of 2 values)
+    3) No need to install numpy
+    4) My application isn't vectorized (and the algorithm isn't really well-suited for that). That means I wouldn't
+    get the performance gains anways, since I'm accessing random elements, rather than passing entire vectors/arrays.
+"""
+
+
+
 from .grid_pos import GridPos
 from .user_interface import TextUI
 

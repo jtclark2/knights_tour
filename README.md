@@ -15,3 +15,8 @@ Trevor Clark
 
 # Setup
 Create new env, and run `make all`. This will run the install scripts and a bunch of other checks.
+
+
+# Future Improvements:
+There are Todo's noted throughout the code, but nothing critical. Just tweaks for fun, that I might add
+if this project grew into a real game.

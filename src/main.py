@@ -25,11 +25,27 @@ from knights_tour.board import Board
 # import termcolor
 # from termcolor import colored
 # print(colored('hello', 'red'), colored('world', 'green'))
-board_dir = "../Boards"
+from pathlib import Path
+
+
+import os
+cwd = os.getcwd()
+split = os.path.split(cwd)
+parent_dir = split[-1]
+
+if(parent_dir == "src"):
+    board_dir = "../Boards"
+else:
+    board_dir = "Boards"    # Relative path if running from the make file (since absolute path unknown)
+
 board_8x8 = board_dir + "/8x8_board.txt"
 board_32x32 = board_dir + "/32x32_board.txt"
-game_engine = GameEngine(Board(board_8x8))
 
+try:
+    game_engine = GameEngine(Board(board_8x8))
+except FileNotFoundError as err:
+    raise FileNotFoundError("Directory of Boards may be incorrect. Either use 'make run', run from '/src', or"
+                            "edit the board_dir in 'main.py'.") from err
 
 print("Run from 'knightboard/src/'")
 
@@ -58,7 +74,7 @@ game_engine.board.display_board(pieces=pieces, value_width=1)
 valid = game_engine.validate_pos_sequence(positions)
 print(f"The sixth move is not (expect: False)? {valid}")
 
-# Prompt problem #2 & #3:
+
 print('\n::::::::::Prompt 2 & 3::::::::::')
 squire = Knight(GameEngine(Board(board_8x8)))
 
@@ -70,17 +86,19 @@ path = squire.reconstruct_path()
 squire.display_path_as_grid(path)
 squire.display_path_as_list(path)
 
-# Prompt problem #2 & #3:
+
 print('\n::::::::::Prompt 4::::::::::')
 # TODO: not reloading boards correctly...honestly, this whole thing is a mess, and I just need to use numpy instead
 #   of the board class
 
 print("World map:")
 knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
-knight.game_engine.board.display_board(value_width=2)
 
 print("Solution:")
 knight.plan_path()
 path = knight.reconstruct_path()
-knight.display_path_as_grid(path)
 knight.display_path_as_list(path)
+knight.display_path_as_grid(path)
+
+
+print('Scroll up to see solutions to all the prompts.')

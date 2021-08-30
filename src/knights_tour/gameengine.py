@@ -1,4 +1,6 @@
 """
+Purpose: Provide the rules of the game, governing legal moves and cost of those moves
+
 Created by: Trevor Clark
 Created on: 4/27/2017
 """
@@ -55,7 +57,6 @@ class GameEngine:
             # raise(IndexError("Moves are not contained on the board"))
             return False
 
-    # TODO
     def _is_horizontal_motion_clear_of_barriers(self, start_x, stop_x, y, sign):
         """
         Checks if jogging horizontal will collide with barrier.
@@ -69,7 +70,6 @@ class GameEngine:
 
         return horizontal_path_clear
 
-    # TODO
     def _is_vertical_motion_clear_of_barriers(self, start_y, stop_y, x, sign):
         """
         Checks if jogging vertical will collide with barrier
@@ -83,17 +83,14 @@ class GameEngine:
 
         return vertical_path_clear
 
-    # TODO: rewrite to add the 3rd case...not sure if I delete what's there, or build on it
     def validate_barrier_clear(self, curr_node, next_node):
         """
         Check if a knight's movement will collide with a barrier.
-        The knight's movement only defines an endpoint, not a path. This method recognizes 3 different paths are
-        possible. Consider the 2 move direction to be "long", and the 1 move driection to be "short".
-        There are 8 possible moves a knight can make, but they are all symmetrical. For each move, there are 3
-        theoretical routes that could be taken, each taking 3 steps:
-            - long, long, short
-            - long, short long
-            - short, long, long
+        The knight's movement only defines an endpoint, not a path. This method recognizes 2 different paths that are
+        possible, which are the 2 ways you could imagine the 'L' shape being laid onto the board. Technically, a third
+        pattern is possible (a staircase shape through the middle), but was not explicit about what it means for a
+        barrier to lie in the path, so I decided a knight's path is to move in an 'L' shape.
+
         Input: node = [y,x]
         Output:
             True if path is clear of barriers

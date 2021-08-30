@@ -1,22 +1,4 @@
-"""
-Assumptions:
-    a) Board is rectangular. I anticipate other cases would work with minor
-       tweaks, notably Board.read_board() and Knight.validate_within_bounds()
-    b) The 32x32 board starts are passed in, since 'S' and 'E' were not
-       pre-populated. 
 
-
-
-Major Assumption: This space is fully searchable, since the board is 32x32,
-meaning that 1024 positions exist, each with 8 possible moves. This is well
-within our computational capbability. For a larger problem, we'd have to use
-a more efficient approach with a goal heuristic, such as A-star.
-
-Created by: Trevor Clark
-
-Custom Dependencies:
-    board.py
-"""
 import copy
 
 # TODO: cost_map and journey_map are NOT game_mechanics objects. Just use numpy arrays instead
@@ -172,7 +154,7 @@ class Knight:
         print(print_str)
 
     def display_path_as_grid(self, path):
-        print("\nPath (values indicate steps taken)")
+        print("\nPath (values indicate cost of most efficient journey)")
         # journey = {}
         journey_cost = {}
         for _, step_node in enumerate(path):
