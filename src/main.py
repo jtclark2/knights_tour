@@ -16,6 +16,7 @@ Level 2, 3 & 4: These are the same problem, just in increasing complexity.
 Level 5:
     I built this...the display was messy, but did I forget to commit it?
 """
+import sys
 
 from knights_tour.knight import Knight
 from knights_tour.gameengine import GameEngine
@@ -48,55 +49,100 @@ except FileNotFoundError as err:
     raise FileNotFoundError("Directory of Boards may be incorrect. Either use 'make run', run from '/src', or"
                             "edit the board_dir in 'main.py'.") from err
 
-print("Run from 'knightboard/src/'")
+def prompt1():
+    print('\n::::::::::Prompt 1::::::::::')
+    # Ensure board is empty to start
+    game_engine.board.reset_board(".")
 
-print('\n::::::::::Prompt 1::::::::::')
-# Ensure board is empty to start
-game_engine.board.reset_board(".")
+    # Valid moves
+    positions = [
+        GridPos(0, 0),
+        GridPos(2, 1),
+        GridPos(4, 0),
+        GridPos(3, 2),
+        GridPos(4, 4),
+        GridPos(6, 5)
+    ]
+    pieces = {pos: f"{val}" for val,pos in enumerate(positions)}
+    UI.display_board(game_engine.board, pieces=pieces, value_width=1)
+    valid = game_engine.validate_pos_sequence(positions)
+    print(f"The first 5 moves valid (expect: True)? {valid}")
 
-# Valid moves
-positions = [
-    GridPos(0, 0),
-    GridPos(2, 1),
-    GridPos(4, 0),
-    GridPos(3, 2),
-    GridPos(4, 4),
-    GridPos(6, 5)
-]
-pieces = {pos: f"{val}" for val,pos in enumerate(positions)}
-UI.display_board(game_engine.board, pieces=pieces, value_width=1)
-valid = game_engine.validate_pos_sequence(positions)
-print(f"The first 5 moves valid (expect: True)? {valid}")
+    # Invalid move
+    positions.append(GridPos(0, 7)) # Invalid
+    pieces = {pos:f"{val}" for val,pos in enumerate(positions)}
+    UI.display_board(game_engine.board, pieces=pieces, value_width=1)
+    valid = game_engine.validate_pos_sequence(positions)
+    print(f"The sixth move is not (expect: False)? {valid}")
 
-# Invalid move
-positions.append(GridPos(0, 7)) # Invalid
-pieces = {pos:f"{val}" for val,pos in enumerate(positions)}
-UI.display_board(game_engine.board, pieces=pieces, value_width=1)
-valid = game_engine.validate_pos_sequence(positions)
-print(f"The sixth move is not (expect: False)? {valid}")
+def prompt2():
+    prompt3()
+
+def prompt3():
+    print('\n::::::::::Prompt 2 & 3::::::::::')
+    squire = Knight(GameEngine(Board(board_8x8)))
+
+    print("Loaded map:")
+    UI.display_board(squire.game_engine.board, value_width=1)
+    print("Solution:")
+    squire.plan_path()
+    path = squire.reconstruct_path()
+    UI.display_path_as_grid(squire.game_engine.board, path, squire.cost_map)
+    UI.display_path_as_list(path, squire.cost_map)
+
+def prompt4():
+    print('\n::::::::::Prompt 4::::::::::')
+    print("World map:")
+    knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+
+    print("Solution:")
+    knight.plan_path()
+    path = knight.reconstruct_path()
+    UI.display_path_as_list(path, knight.cost_map)
+    UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
+
+def prompt5():
+    print('\n::::::::::Prompt 5 (knights tour - hamiltonian path problem)::::::::::')
+    print("Pretty sure this reducing to the hamiltonian path problem is NP-complete, so we won't really be solving it. "
+          "However, we can use some heuristics to improve on brute force in the simpler cases. We can also get "
+          "some high scores, even if we can't guarantee highest.")
+    print("World map:")
+    # squire = Knight(GameEngine(Board(board_8x8)))
+    # squire.find_longest_path_entry()
+
+    knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+    knight.find_longest_path_entry()
 
 
-print('\n::::::::::Prompt 2 & 3::::::::::')
-squire = Knight(GameEngine(Board(board_8x8)))
-
-print("Loaded map:")
-UI.display_board(squire.game_engine.board, value_width=1)
-print("Solution:")
-squire.plan_path()
-path = squire.reconstruct_path()
-UI.display_path_as_grid(squire.game_engine.board, path, squire.cost_map)
-UI.display_path_as_list(path, squire.cost_map)
+    path = knight.reconstruct_path()
+    UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
 
 
-print('\n::::::::::Prompt 4::::::::::')
-print("World map:")
-knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+if __name__ == '__main__':
+    print("*"*50)
+    if(len(sys.argv) == 2):
+        prompt = int(sys.argv[1])
+        print(prompt)
+    else:
+        prompt = None
 
-print("Solution:")
-knight.plan_path()
-path = knight.reconstruct_path()
-UI.display_path_as_list(path, knight.cost_map)
-UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
+    if prompt is None or prompt == 0:
+        prompt1()
+        prompt3() # 2 and 3 are redundant
+        prompt4()
+        prompt5()
 
+    if prompt == 1:
+        prompt1()
 
-print('Scroll up to see solutions to all the prompts.')
+    if prompt == 2:
+        prompt2()
+
+    if prompt == 3:
+        prompt3()
+
+    if prompt == 4:
+        prompt4()
+
+    if prompt == 5:
+        prompt5()

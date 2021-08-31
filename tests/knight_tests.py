@@ -10,6 +10,7 @@ from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.board import Board
 from src.knights_tour.user_interface import UI
 
+# pylint: disable=protected-access
 class KnightTester(unittest.TestCase):
     """
     Let the knight's gauntlet commence!

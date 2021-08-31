@@ -51,9 +51,13 @@ class Board:
         """
         try:
             return self._board_grid[pos.x][pos.y]
-        except(IndexError):
+        except IndexError:
             print(f"Index out of range. Board size: {self.get_width(), self.get_height()}\tpos: {pos}")
             raise
+        except AttributeError as err:
+            raise AttributeError(f"get_value failed because of data type. Instead of GridPos, it tried to get -> "
+                                 f"{type(pos)}: {pos}") from err
+
 
 
     def set_element(self, pos, value):

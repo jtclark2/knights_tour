@@ -1,5 +1,4 @@
 import unittest
-import os
 
 # local imports
 from src.knights_tour.grid_pos import GridPos
@@ -8,7 +7,7 @@ from src.knights_tour.pieces import Pieces
 # test target
 from src.knights_tour.board import Board
 
-
+# pylint: disable=protected-access
 class BoardTester(unittest.TestCase):
     def setUp(self):
         """

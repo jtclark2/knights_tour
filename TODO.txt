@@ -1,5 +1,8 @@
 TODO: Future Improvements:
-    - Add the 5th case
+    - Fix heuristic in the 5th case
+    - Fix the imports...they work, but with bad practices. I've set the linter to ignore them for now.
+
+    Very low priority:
     - Consider adding the 3rd pattern to the barrier-check (or not, I kind of like it this way too)
     - Expand teleport functions...if you're bored
     - Tests need an overhaul...which I probably won't do unless I actively modify the function of the associated code

@@ -5,6 +5,7 @@ from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.pieces import Pieces
 
+# pylint: disable=protected-access
 class GameEngineTester(unittest.TestCase):
     def setUp(self):
         """

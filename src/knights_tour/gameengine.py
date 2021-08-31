@@ -159,17 +159,20 @@ class GameEngine:
         """
         Return cost for landing on a specific location (ie: the cost of the move).
         """
-        value_lookup = {
-            Pieces.BARRIER.value: 100000,
-            Pieces.EMPTY.value: 1,
-            Pieces.WATER.value: 2,
-            Pieces.ROCK.value: 100000,  # infinite, if you want
-            Pieces.TELEPORT.value: 1,
-            Pieces.LAVA.value: 5,
-            Pieces.START.value: 0,  # mute point, since costs acrue upon landing
-            Pieces.END.value: 1,
-        }  # 'E' is empty (eg: don't allow it to be water, lava, teleport, etc.)
-        return value_lookup[value]
+        try:
+            value_lookup = {
+                Pieces.BARRIER.value: None, # Can't visit this space
+                Pieces.EMPTY.value: 1,
+                Pieces.WATER.value: 2,
+                Pieces.ROCK.value: None, # Can't visit this space
+                Pieces.TELEPORT.value: 1,
+                Pieces.LAVA.value: 5,
+                Pieces.START.value: 0,  # mute point, since costs acrue upon landing
+                Pieces.END.value: 1,
+            }  # 'E' is empty (eg: don't allow it to be water, lava, teleport, etc.)
+            return value_lookup[value]
+        except KeyError as err:
+            raise KeyError(f"KeyError: Could not lookup value for {type(value)}: {value}") from err
 
     def teleport(self, curr_pos):
         """

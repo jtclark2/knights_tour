@@ -4,7 +4,6 @@ from io import StringIO
 import unittest
 
 # Resources
-from src.knights_tour.gameengine import GameEngine
 from src.knights_tour.grid_pos import GridPos
 from src.knights_tour.board import Board
 from src.knights_tour.pieces import Pieces
@@ -12,8 +11,7 @@ from src.knights_tour.pieces import Pieces
 # Test target
 from src.knights_tour import user_interface
 
-
-
+# pylint: disable=protected-access
 class BoardTester(unittest.TestCase):
     def setUp(self):
         """
