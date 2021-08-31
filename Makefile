@@ -24,6 +24,4 @@ all: install format test lint
 
 
 run:
-	cd src
 	python src/main.py
-	cd ..

@@ -23,6 +23,7 @@ from knights_tour.gameengine import GameEngine
 from knights_tour.grid_pos import GridPos
 from knights_tour.board import Board
 from knights_tour.user_interface import UI
+from knights_tour.heuristics import LongestPathSearchHeuristics as Heuristics
 
 # import termcolor
 # from termcolor import colored
@@ -42,6 +43,7 @@ else:
 
 board_8x8 = board_dir + "/8x8_board.txt"
 board_32x32 = board_dir + "/32x32_board.txt"
+board_32x32_mod = board_dir + "/32x32_board_mod.txt"
 
 try:
     game_engine = GameEngine(Board(board_8x8))
@@ -93,30 +95,41 @@ def prompt3():
 def prompt4():
     print('\n::::::::::Prompt 4::::::::::')
     print("World map:")
-    knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+    knight = Knight(GameEngine(Board(board_32x32_mod)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
+    UI.display_board(knight.game_engine.board, value_width=2)
 
     print("Solution:")
     knight.plan_path()
     path = knight.reconstruct_path()
     UI.display_path_as_list(path, knight.cost_map)
     UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
+    print("The map above shows the path solved. Various spaces on the board have different special properties, such as"
+          "lava (costs 5 to land on) and teleports, which connection 2 distance spaces at a cost of 1. To see the"
+          "map this path was built on, scroll up.")
 
 def prompt5():
     print('\n::::::::::Prompt 5 (knights tour - hamiltonian path problem)::::::::::')
-    print("Pretty sure this reducing to the hamiltonian path problem is NP-complete, so we won't really be solving it. "
-          "However, we can use some heuristics to improve on brute force in the simpler cases. We can also get "
-          "some high scores, even if we can't guarantee highest.")
     print("World map:")
-    # squire = Knight(GameEngine(Board(board_8x8)))
-    # squire.find_longest_path_entry()
+    squire = Knight(GameEngine(Board(board_8x8)))
+    squire.find_longest_path_entry(heuristic=Heuristics().dense_search_heuristic)
+    squire.print_longest_path()
 
-    knight = Knight(GameEngine(Board(board_32x32)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
-    knight.find_longest_path_entry()
+    knight = Knight(GameEngine(Board(board_32x32_mod)), start_pos=GridPos(2, 2), end_pos=GridPos(30, 30))
 
+    ### including these just to play with. It's fun to see how each react
+    heuristic = Heuristics().identity_heuristic
+    # heuristic = Heuristics().dense_search_heuristic
+    # heuristic = Heuristics().sparse_search_heuristic
+    # heuristic = Heuristics().random_search_heuristic
 
-    path = knight.reconstruct_path()
-    UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
-
+    knight.find_longest_path_entry(time_allowed = 10,
+                                   heuristic = heuristic)
+    knight.print_longest_path()
+    print("\n\n\nThis problem reduces to the hamiltonian path problem, which is NP-complete, so we don't solve it. "
+          "\nHowever, we can use some heuristics to improve on brute force in the simpler cases. We can also get "
+          "\nsome high scores, even if we can't guarantee highest. These solutions don't force the endpoint to match."
+          "\nIn order to ensure that, you need to run plan_path(), and then continually pop entries off the end of the"
+          "path, until a solution is found. But it's a lot less interesting than this!")
 
 if __name__ == '__main__':
     print("*"*50)

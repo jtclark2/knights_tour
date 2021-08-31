@@ -5,6 +5,7 @@ from .pieces import Pieces
 from .grid_pos import GridPos
 from .gameengine import GameEngine
 from .user_interface import UI
+from .heuristics import LongestPathSearchHeuristics as Heuristics
 
 
 class Knight:
@@ -42,18 +43,18 @@ class Knight:
         self.cost_map = copy.deepcopy(self.game_engine.board)
         self.cost_map.reset_board()
 
-        # Initialize Config parameters for longest_path
-
+        # Initialize general parameters for longest_path
         self.available_moves_map = None
         self.start_time = None
-
-        self.exploration_breadth = 8
-
         self.optimal_cost = 0
         self.optimal_path = [self.start_pos]
 
-        self.time_allowed = 100000  # time allowed to explore (in seconds)
-        self._debug_cycles = 0
+        # Config for longest path
+        self.time_allowed = 10 # time allowed to explore (in seconds)
+        self.heuristic = Heuristics().dense_search_heuristic
+
+        # This would be every step on the board (so no obstructions, and a perfect score)
+        self.cost_acceptance_thresh = self.game_engine.board.get_height() * self.game_engine.board.get_width() - 1
 
     ################## Solver ##################
     def reconstruct_path(self):
@@ -153,24 +154,43 @@ class Knight:
         return better_moves
 
 
-    def find_longest_path_entry(self):
+    def find_longest_path_entry(self,
+                                time_allowed = 10,
+                                heuristic = Heuristics().identity_heuristic,
+                                cost_acceptance_thresh=None):
         """
+        This is the entry point for a depth first search, seeking the highest cost path. Heuristics can be used to
+        determine the order of the nodes it seeks out, but it will still fundamentally be depth-first.
+
+        This is intended to pseudo-solve problem 5. The full optimal solution is NP-complete, but we can still create
+        paths with good results.
+
+        Configuration:
+            Rather than adding numerous inputs, or making a knight_config data type, I just got lazy, and put
+            all the config in the init.
+
+        inputs:
+            path: The sequence of nodes that the knight traveled through to arrive at it's destination.
+            cost: The total cost accrued while traveling the path
+
+        outputs:
+            None; however, see side-effects for member variables that get updated
+
+        Side-effects:
+            Solutions will will be load into: self.optimal_path and self.optimal_cost
+
+
         Find longest path by exploring ALL paths, according to a heuristic.
 
         This is an NP-complete problem, so the 32x32 has no known GUARANTEED solution (to my knowledge). However,
         we can use heuristics to explore in a smart way. This still doesn't guarantee success, but it improves our odds.
 
-        Heuristic: Always move the knight to an adjacent, unvisited square with minimal degree. (
-            degree: how many moves would be available from the next spot
-
-            Intuition: You would think to visit squares of highest degree, yielding the most future options. However,
-            this leads to a lot of "islands", unreachable spots/clustered. By taking the lowest degree, we can work in
-            chunks, quickly going down paths that terminate more rapidly.
-
-            Advanced (I don't intend to implement this, but note it for completeness): Add a secondary search criteria
-                for cost of each step.
 
         """
+        if cost_acceptance_thresh is not None:
+            self.cost_acceptance_thresh = cost_acceptance_thresh
+        self.time_allowed = time_allowed
+        self.heuristic = heuristic
 
         # Initialize total available moves
         self.available_moves_map = copy.deepcopy(self.game_engine.board)
@@ -187,16 +207,39 @@ class Knight:
 
     def find_longest_path_recursive(self, path, cost):
         """
-        Technical Note: Python sort() is stable, which allows us to use it within our heuristic deterministically.
+        This performs a depth first search, seeking the highest cost path. Heuristics can be used to determine the
+        order of the nodes it seeks out, but it will still fundamentally be depth-first.
+
+        Configuration:
+            Rather than adding numerous inputs, or making a knight_config data type, I just got lazy, and put
+            all the config in the init.
+
+        inputs:
+            path: The path
+            cost:
+
+        outputs:
+            None; however, see side-effects for member variables that get updated
+
+        Side-effects:
+            Solutions will will be load into: self.optimal_path and self.optimal_cost
+
         """
+
+
+        # End condition: either timer or missing define an acceptable score or number of non-visited spaces
+        if time.time() - self.start_time > self.time_allowed:
+            return
+        if self.optimal_cost >= self.cost_acceptance_thresh:
+            return
 
         # ### Setup (find next moves)
         curr_pos = path[-1]
 
         moves = self.game_engine.get_possible_moves(curr_pos)
-        heuristic_moves = [(self.available_moves_map.get_value(move), move) for move in moves]
-        heuristic_moves.sort(key=lambda value_move_tuple: value_move_tuple[0]) #, reverse=True) # sort by value
-        # moves = [move[1] for move in heuristic_moves]
+        degree_move_tuples = [(self.available_moves_map.get_value(move), move) for move in moves]
+        sorted_move_tuples = self.heuristic(degree_move_tuples)
+        moves = [move[1] for move in sorted_move_tuples]
 
         # ### Prepare for move
 
@@ -213,27 +256,23 @@ class Knight:
         nominal_value = self.game_engine.board.get_value(curr_pos)
         self.game_engine.board.set_element(curr_pos, Pieces.ROCK.value)
 
+
         # ### Record score (if it's a new 'best')
-        if cost > self.optimal_cost and curr_pos == self.end_pos:
+        if cost > self.optimal_cost:
             self.optimal_path = copy.deepcopy(path)
             self.optimal_cost = cost
 
-            if(time.time() - self.start_time > 0.1): # just reducing the initial flood
-                print("Results so far...")
-                print(f"Highest Cost: {self.optimal_cost}")
-                print(f"Path: {self.optimal_path}")
-                pieces = {pos: f"{val}" for val,pos in enumerate(path)}
-                UI.display_board(self.game_engine.board, pieces=pieces, value_width=3)
+            if(time.time() - self.start_time > 1): # just reducing the initial flood
+                # self.print_longest_path()
+                pass
+
 
         # ### Take the next move (recursively)
-        for next_move in moves[:self.exploration_breadth]:
+        for next_move in moves:
             self.find_longest_path_recursive(path + [next_move], cost)
 
         # ### Backtrack and cleanup
-        # End condition: either timer or missing define an acceptable score or number of non-visited spaces
-        if time.time() - self.start_time > self.time_allowed:
-            return
-            # self.start_time = time.time()
+
 
         # increment neighbors on available_moves_map
         for move in moves:
@@ -242,3 +281,11 @@ class Knight:
         # replace barrier with nominal value
         self.game_engine.board.set_element(curr_pos, nominal_value)
 
+
+    def print_longest_path(self):
+        print("Highest cost path found...")
+        print(f"Highest Cost: {self.optimal_cost}")
+        print(f"Steps in path: {len(self.optimal_path)}")
+        # print(f"Path: {self.optimal_path}")
+        pieces = {pos: f"{val}" for val,pos in enumerate(self.optimal_path)}
+        UI.display_board(self.game_engine.board, pieces=pieces, value_width=3)
