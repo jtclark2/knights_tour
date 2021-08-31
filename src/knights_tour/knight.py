@@ -9,7 +9,6 @@ from .heuristics import LongestPathSearchHeuristics as Heuristics
 
 
 class Knight:
-    # ***
     def __init__(self, game_engine: GameEngine, start_pos: GridPos=None, end_pos: GridPos=None):
         """
         Initialize the knight on the board.
@@ -62,7 +61,7 @@ class Knight:
         Builds a path from starting point to target.
 
         Assumptions:
-            self.journey_map has already been populated correctly (via plan_path)
+            self.journey_map has already been populated correctly (via plan_shortest_path)
 
         return: List of positions the knight travels through on it's path
 
@@ -77,7 +76,7 @@ class Knight:
 
         return list(reversed(optimal_path))
 
-    def plan_path(self):
+    def plan_shortest_path(self):
         """
         Plans a path for the knight to take. Optimizes according to cost function
         defined by self.get_cost().
@@ -153,7 +152,6 @@ class Knight:
 
         return better_moves
 
-
     def find_longest_path_entry(self,
                                 time_allowed = 10,
                                 heuristic = Heuristics().identity_heuristic,
@@ -203,9 +201,9 @@ class Knight:
 
         self.start_time = time.time()
 
-        self.find_longest_path_recursive(path=[self.start_pos], cost=0)  # storing in self.journey_map
+        self._find_longest_path_recursive(path=[self.start_pos], cost=0)  # storing in self.journey_map
 
-    def find_longest_path_recursive(self, path, cost):
+    def _find_longest_path_recursive(self, path, cost):
         """
         This performs a depth first search, seeking the highest cost path. Heuristics can be used to determine the
         order of the nodes it seeks out, but it will still fundamentally be depth-first.
@@ -269,7 +267,7 @@ class Knight:
 
         # ### Take the next move (recursively)
         for next_move in moves:
-            self.find_longest_path_recursive(path + [next_move], cost)
+            self._find_longest_path_recursive(path + [next_move], cost)
 
         # ### Backtrack and cleanup
 

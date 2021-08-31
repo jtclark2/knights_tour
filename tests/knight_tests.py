@@ -31,7 +31,7 @@ class KnightTester(unittest.TestCase):
             end_pos=GridPos(31, 31),
         )
 
-        self.k.plan_path()
+        self.k.plan_shortest_path()
 
         path = self.k.reconstruct_path()
         UI.display_path_as_list(path, self.k.cost_map)
@@ -117,12 +117,12 @@ class KnightTester(unittest.TestCase):
         self.assertEqual(self.k.journey_map._board_grid, expected_journey_map)
 
     # TODO: figure out what this really tests
-    def test_plan_path(self):
-        self.k.plan_path()
+    def test_plan_shortest_path(self):
+        self.k.plan_shortest_path()
 
     # TODO: figure out what this really tests...doesn't seem to do much
     def test_reconstruct_path_8x8(self):
-        self.k.plan_path()
+        self.k.plan_shortest_path()
         # path = self.k.reconstruct_path()
         # for step in path:
         #     my_str = "Cost: %i \t" % self.k.cost_map.get_piece(step)

@@ -10,7 +10,7 @@ To experiment more, the specific solvers can be called:
 Level 1: Call Knight().validate_pos_sequence(node_sequence)
 
 Level 2, 3 & 4: These are the same problem, just in increasing complexity.
-    Call Knight().plan_path() to map the space, followed by Knight().reconstruct_path()
+    Call Knight().plan_shortest_path() to map the space, followed by Knight().reconstruct_path()
     to build the path.
 
 Level 5:
@@ -87,7 +87,7 @@ def prompt3():
     print("Loaded map:")
     UI.display_board(squire.game_engine.board, value_width=1)
     print("Solution:")
-    squire.plan_path()
+    squire.plan_shortest_path()
     path = squire.reconstruct_path()
     UI.display_path_as_grid(squire.game_engine.board, path, squire.cost_map)
     UI.display_path_as_list(path, squire.cost_map)
@@ -99,7 +99,7 @@ def prompt4():
     UI.display_board(knight.game_engine.board, value_width=2)
 
     print("Solution:")
-    knight.plan_path()
+    knight.plan_shortest_path()
     path = knight.reconstruct_path()
     UI.display_path_as_list(path, knight.cost_map)
     UI.display_path_as_grid(knight.game_engine.board, path, knight.cost_map)
@@ -128,7 +128,7 @@ def prompt5():
     print("\n\n\nThis problem reduces to the hamiltonian path problem, which is NP-complete, so we don't solve it. "
           "\nHowever, we can use some heuristics to improve on brute force in the simpler cases. We can also get "
           "\nsome high scores, even if we can't guarantee highest. These solutions don't force the endpoint to match."
-          "\nIn order to ensure that, you need to run plan_path(), and then continually pop entries off the end of the"
+          "\nIn order to ensure that, you need to run plan_shortest_path(), and then continually pop entries off the end of the"
           "path, until a solution is found. But it's a lot less interesting than this!")
 
 if __name__ == '__main__':

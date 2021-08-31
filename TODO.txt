@@ -1,6 +1,6 @@
 TODO: Future Improvements:
     - Fix the imports...they work, but with bad practices. I've set the linter to ignore them for now.
-    - Consider adding a heuristic to plan_path()...though it's already basically instantaneous for a 32x32 board
+    - Consider adding a heuristic to plan_shortest_path()...though it's already basically instantaneous for a 32x32 board
         - This would basically turn it into A-star
     - Each heuristic performs wonderfully in context. You could create a "smart conext" mapper that determined specific
       heuristics to use in certain regions. It would be a lot of fun, but way beyond the intended scope of this project.
