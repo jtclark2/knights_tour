@@ -10,7 +10,7 @@ This repo addressing a series of increasingly complex maze/pathfinding problems 
   - Faetures: Heuristic search
   - This problem is NP-complete, so we're not solving it perfectly, but using heuristics to explore a variety of partial solutions.
 
-Note: This prompt was originally a take home problem; however, I can't remember the source anymore.
+* I've forgetten the original source of this prompt...If anyone knows, please share with me, so I can properly credit the author.
 
 # Setup:
 Linux: Create env, and run "make all"
